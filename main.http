@@ -1,9 +1,0 @@
-GET http://localhost:8000/jarm?host=google.com&port=443
-
-###
-
-GET http://192.168.1.14:8000/jarm?host=google.com&port=443
-
-### Error validation
-
-GET http://localhost:8000/jarm?host=google.com&port=wow

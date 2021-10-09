@@ -8,3 +8,9 @@ edition = "2018"
 [dependencies]
 rocket = "0.4.10"
 rust_jarm = "0.2.0"
+serde = { version = "1.0.130", features = ["derive"] }
+
+[dependencies.rocket_contrib]
+version = "0.4.10"
+default-features = false
+features = ["json"]

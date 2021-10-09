@@ -1,0 +1,11 @@
+### Request with host and port
+
+GET http://localhost:8000/jarm?host=google.com&port=443
+
+### Use default https port
+
+GET http://localhost:8000/jarm?host=google.com
+
+### Error validation test
+
+GET http://localhost:8000/jarm?host=google.com&port=wow
