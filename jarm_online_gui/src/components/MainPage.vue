@@ -4,7 +4,7 @@
         rel="stylesheet">
   <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.3/gh-fork-ribbon.min.css"/>
-  <a id="darkRibbon" class="github-fork-ribbon right-top" href="https://github.com/simonwhitaker/github-fork-ribbon-css"
+  <a id="darkRibbon" class="github-fork-ribbon right-top" href="https://github.com/Hugo-C/jarm-online"
      data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
   <form class="searchBarDiv" @submit="onSubmit">
     <it-input v-model="inputUrl" prefix-icon="search" label-top="Compute JARM hash" placeholder="Url or IP"
@@ -31,14 +31,14 @@
       <div>
         Alexa top 1 Million overlap:
         <it-tooltip content="Star the github repo to see new releases in your feed" placement="bottom">
-          <a href="https://github.com/" target="_blank" rel="noopener noreferrer">
+          <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
             <it-tag type="black" filled>not yet implemented</it-tag>
           </a>
         </it-tooltip>
         <it-divider vertical/>
         Known malicious malware family:
         <it-tooltip content="Star the github repo to see new releases in your feed" placement="bottom">
-          <a href="https://github.com/" target="_blank" rel="noopener noreferrer">
+          <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
             <it-tag type="black" filled>not yet implemented</it-tag>
           </a>
         </it-tooltip>
@@ -49,7 +49,7 @@
     <it-divider/>
     <h4> Latest urls requested
       <it-tooltip content="Star the github repo to see new releases in your feed" placement="bottom">
-        <a href="https://github.com/" target="_blank" rel="noopener noreferrer">
+        <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
           <it-tag type="black" filled>not yet implemented</it-tag>
         </a>
       </it-tooltip>
