@@ -7,7 +7,7 @@
   <a id="darkRibbon" class="github-fork-ribbon right-top" href="https://github.com/simonwhitaker/github-fork-ribbon-css"
      data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
   <form class="searchBarDiv" @submit="onSubmit">
-    <it-input v-model="inputUrl" prefix-icon="search" label-top="Compute JARM hash" placeholder="Url"
+    <it-input v-model="inputUrl" prefix-icon="search" label-top="Compute JARM hash" placeholder="Url or IP"
               autofocus ref="inputBar"/>
     <p id="disclaimerLine">
       <it-tag id="disclaimerTag" type="primary" filled>Disclaimer:</it-tag>

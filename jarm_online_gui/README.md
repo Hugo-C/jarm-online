@@ -20,5 +20,11 @@ npm run build
 npm run lint
 ```
 
+### Run as a docker container 
+*WIP TODO*
+````shell
+docker build . -t jarm_gui
+docker run -p 8080:80 jarm_gui
+````
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
