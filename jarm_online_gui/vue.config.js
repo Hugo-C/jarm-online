@@ -1,7 +1,5 @@
 module.exports = {
     devServer: {
-        watchOptions: {
-            poll: true
-        }
+        watchFiles: ["src/*"],
     }
 }
