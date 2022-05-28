@@ -4,9 +4,12 @@ The API is written in Rust and leverage underneath [a rust library](https://gith
 The GUI is made with Vue.js with the future goal to store previously computed hash, their maliciousness (based on a list of known hash) and their overlap with top visited websites.
 
 ## Setup
-*WIP*  
-the API can be setup via [docker](Dockerfile).  
-See [GUI's README](jarm_online_gui/README.md) to spinup the GUI locally.
+API/GUI can be setup via [docker](docker-compose.yml).  
+To run the service for production, simply use:
+```shell
+docker-compose up
+```
+For development see [GUI's README](jarm_online_gui/README.md) to spinup the GUI locally and leverage auto-reload.
 
 ## API Endpoints
 A single endpoint is currently available:

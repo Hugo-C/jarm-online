@@ -1,6 +1,10 @@
-FROM rust:1.61
+FROM rust:1.61 as build-stage
+
+ARG BUILD_TARGET="x86_64-unknown-linux-musl"
+ARG BUILD_OPTIONS="--release --target $BUILD_TARGET"
 
 RUN rustup default nightly
+RUN rustup target add $BUILD_TARGET
 
 WORKDIR /app
 
@@ -14,13 +18,16 @@ COPY Cargo.lock /app/project
 WORKDIR /app/project
 
 # This is a dummy build to get the dependencies cached.
-RUN cargo build --release
+RUN cargo build $BUILD_OPTIONS
 
 # Now copy in the rest of the sources
 COPY . /app/project/
 
 # This is the actual build, touch the main.rs to have newer timestamp
 RUN touch /app/project/src/main.rs
-RUN cargo build --release
+RUN cargo build $BUILD_OPTIONS -Z unstable-options --out-dir /app/dist
 
-CMD ["cargo", "run", "--release"]
+FROM alpine:3 as production-stage
+RUN mkdir /app
+COPY --from=build-stage /app/dist/jarm_online /app
+CMD /app/jarm_online
