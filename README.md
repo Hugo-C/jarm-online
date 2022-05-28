@@ -21,10 +21,10 @@ See [example.http](examples.http) for examples.
 
 ## Images statistics
 As of [commit 9f4079](https://github.com/Hugo-C/jarm-online/commit/9f4079fe5b31c08626294b56458e49238fd2430b), 
-| image           | image size | RAM usage  |
+| image           | RAM usage  | image size (compressed) |
 | :-------------: | :--------: | :--------: |
-| jarm_online_api | 12.1MB     | <1MB       |
-| jarm_online_gui | 26.1MB     | <2MB       |
+| jarm_online_api | <1MB       | ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/hugocker/jarm_online_api/latest?style=flat-square)     |
+| jarm_online_gui | <2MB       | ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/hugocker/jarm_online_gui/latest?style=flat-square)     |
 
 ## GUI looks
 ![](Doc/website_current_look.png)
