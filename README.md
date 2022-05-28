@@ -19,13 +19,12 @@ GET /jarm?host=<host>&port=<port>
 It takes a required `host` parameter and optionally `port` (default to 443).  
 See [example.http](examples.http) for examples.
 
-## Resource requirements
+## Images statistics
 As of [commit 9f4079](https://github.com/Hugo-C/jarm-online/commit/9f4079fe5b31c08626294b56458e49238fd2430b), 
-| image           | disk space usage  | RAM usage  |
-| :-------------: | :---------------: | :--------: |
-| jarm_online_api | 12.1MB            | <1MB       |
-| :-------------: | :---------------: | :--------: |
-| jarm_online_gui | 26.1MB            | <2MB       |
+| image           | image size | RAM usage  |
+| :-------------: | :--------: | :--------: |
+| jarm_online_api | 12.1MB     | <1MB       |
+| jarm_online_gui | 26.1MB     | <2MB       |
 
 ## GUI looks
 ![](Doc/website_current_look.png)
