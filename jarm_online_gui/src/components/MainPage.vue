@@ -83,7 +83,7 @@ export default {
       this.lookUpUrl(this.inputUrl)
     },
     lookUpUrl(url) {
-      const path = 'http://localhost:8000/jarm';
+      const path = '/api/v1/jarm';
       const payload = {
         params: {
           host: url,
