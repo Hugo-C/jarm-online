@@ -3,6 +3,12 @@ This repository provides a way to compute [JARM hash](https://github.com/salesfo
 The API is written in Rust and leverage underneath [a rust library](https://github.com/Hugo-C/rustJarm).  
 The GUI is made with Vue.js with the future goal to store previously computed hash, their maliciousness (based on a list of known hash) and their overlap with top visited websites.
 
+<div align="center">
+
+# Live version: [hugocjarm.software](http://hugocjarm.software/)  
+![Website](https://img.shields.io/website?down_color=lightgrey&style=for-the-badge&up_color=brightgreen&up_message=online&url=http%3A%2F%2Fhugocjarm.software%2F)
+</div>
+
 ## Setup
 API/GUI can be setup via [docker](docker-compose.yml).  
 To run the service for production, simply use:
@@ -22,8 +28,8 @@ See [example.http](examples.http) for examples.
 ## Images statistics
 |                                image                                 | RAM usage |                                                image size (compressed)                                                 |
 |:--------------------------------------------------------------------:|:---------:|:----------------------------------------------------------------------------------------------------------------------:|
-| [jarm_online_api](https://hub.docker.com/r/hugocker/jarm_online_api) |   <1MB    | ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/hugocker/jarm_online_api/latest?style=flat-square) |
-| [jarm_online_gui](https://hub.docker.com/r/hugocker/jarm_online_gui) |   <2MB    | ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/hugocker/jarm_online_gui/latest?style=flat-square) |
+| [jarm_online_api](https://hub.docker.com/r/hugocker/jarm_online_api) |   ~1MB    | ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/hugocker/jarm_online_api/latest?style=flat-square) |
+| [jarm_online_gui](https://hub.docker.com/r/hugocker/jarm_online_gui) |   ~2MB    | ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/hugocker/jarm_online_gui/latest?style=flat-square) |
 
 ## GUI looks
 ![](Doc/website_current_look.png)
