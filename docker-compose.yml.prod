@@ -4,6 +4,7 @@ services:
     image: hugocker/jarm_online_gui
     container_name: jarm_online_gui_container
     volumes:
+       - ./<path>/nginx.conf:/etc/nginx/nginx.conf
        - ./<path>/www.hugocjarm.software.key:/etc/nginx/ssl/www.hugocjarm.software.key
        - ./<path>/www.hugocjarm.software.pem:/etc/nginx/ssl/www.hugocjarm.software.pem
     restart: unless-stopped
