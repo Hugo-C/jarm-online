@@ -11,6 +11,10 @@ RUN mkdir /app
 COPY --from=build-stage /app/dist /app
 COPY nginx.conf /etc/nginx/nginx.conf
 
+ARG nginx_uid=1001
+ARG nginx_gid=1001
+RUN apk add shadow && usermod -u $nginx_uid -o nginx && groupmod -g $nginx_gid -o nginx
+
 # Add permissions for nginx user
 RUN chown -R nginx:nginx /app && \
     chmod -R 755 /app && \
