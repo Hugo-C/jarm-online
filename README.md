@@ -5,8 +5,8 @@ The GUI is made with Vue.js with the future goal to store previously computed ha
 
 <div align="center">
 
-# Live version: [hugocjarm.software](http://hugocjarm.software/)  
-![Website](https://img.shields.io/website?down_color=lightgrey&style=for-the-badge&up_color=brightgreen&up_message=online&url=http%3A%2F%2Fhugocjarm.software%2F)
+# Live version: [hugocjarm.software](https://hugocjarm.software/)  
+![Website](https://img.shields.io/website?down_color=lightgrey&style=for-the-badge&up_color=brightgreen&up_message=online&url=https%3A%2F%2Fhugocjarm.software%2F)
 </div>
 
 ## Setup
@@ -20,7 +20,7 @@ For development see [GUI's README](jarm_online_gui/README.md) to spinup the GUI 
 ## API Endpoints
 A single endpoint is currently available:
 ````http request
-GET /jarm?host=<host>&port=<port>
+GET api/v1/jarm?host=<host>&port=<port>
 ````
 It takes a required `host` parameter and optionally `port` (default to 443).  
 See [example.http](examples.http) for examples.
