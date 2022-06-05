@@ -9,6 +9,8 @@ edition = "2018"
 rocket = "0.4.11"
 rust_jarm = "0.2.0"
 serde = { version = "1.0.130", features = ["derive"] }
+lazy_static = "1.4.0"
+regex = "1.5.6"
 
 [dependencies.rocket_contrib]
 version = "0.4.10"

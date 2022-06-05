@@ -28,6 +28,22 @@ client.test("Response content-type is json", function() {
 });
 %}
 
+### host is extracted from Url
+
+GET http://localhost:8000/jarm?host=https://google.com
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response status is not 200");
+});
+
+client.test("Response content-type is json", function() {
+  var type = response.contentType.mimeType;
+  client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+  client.assert(response.body.host === "google.com", "Host is not correctly extracted");
+});
+%}
+
 ### NGINX correctly redirect API calls
 
 GET http://localhost:80/api/v1/jarm?host=google.com
