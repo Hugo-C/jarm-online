@@ -41,7 +41,7 @@ struct JarmResponse {
 
 #[get("/?<host>&<port>")]
 fn jarm(host: String, port: Option<String>) -> Json<JarmResponse> {
-    let _port = port.unwrap_or("443".to_string());
+    let _port = port.unwrap_or_else(|| "443".to_string());
     let jarm_hash = Jarm::new(host.clone(), _port.clone()).hash()
         .expect("failed to connect");  // TODO handle error
     Json(JarmResponse { host, port: _port, jarm_hash })
