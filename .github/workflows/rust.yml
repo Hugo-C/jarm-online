@@ -17,8 +17,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build
-      run: cargo build --verbose
-    - name: Lint
-      run: cargo clippy
+      run: cargo build
     - name: Run tests
       run: cargo test --verbose
+    - name: Lint
+      run: cargo install clippy && cargo clippy
