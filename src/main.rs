@@ -42,7 +42,7 @@ struct JarmResponse {
 
 #[get("/?<host>&<port>")]
 fn jarm(host: String, port: Option<String>) -> Json<JarmResponse> {
-    let _port = port.unwrap_or_else(|| "443".to_string());
+    let _port = port.unwrap_or("443".to_string());
     let _host = sanitize_host(&host);
     let jarm_hash = Jarm::new(
         _host.clone(),
