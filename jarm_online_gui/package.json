@@ -12,14 +12,15 @@
     "core-js": "^3.6.5",
     "equal-vue": "^0.79.3",
     "vue": "^3.0.0",
-    "vue-clipboard3": "^1.0.1"
+    "vue-clipboard3": "^1.0.1",
+    "vue-meta": "^3.0.0-alpha.10"
   },
   "devDependencies": {
+    "@babel/eslint-parser": "^7.18.2",
     "@vue/cli-plugin-babel": "^5.0.4",
     "@vue/cli-plugin-eslint": "^5.0.4",
     "@vue/cli-service": "^5.0.4",
     "@vue/compiler-sfc": "^3.0.0",
-    "@babel/eslint-parser": "^7.18.2",
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^9.0.1"
   },

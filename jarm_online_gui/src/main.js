@@ -1,6 +1,7 @@
 import {createApp} from 'vue'
 import Equal from 'equal-vue'
 import 'equal-vue/dist/style.css'
+import { createMetaManager } from 'vue-meta'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -22,4 +23,7 @@ app.component('todo-item', {
 
 
 
-app.use(Equal).mount('#app')
+app
+    .use(Equal)
+    .use(createMetaManager())
+    .mount('#app')
