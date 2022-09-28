@@ -1,5 +1,5 @@
 # Taken from https://cli.vuejs.org/guide/deployment.html#docker-nginx
-FROM node:16.15 as build-stage
+FROM node:16.17 as build-stage
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
