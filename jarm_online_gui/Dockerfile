@@ -1,5 +1,7 @@
 # Taken from https://cli.vuejs.org/guide/deployment.html#docker-nginx
 FROM node:16.17 as build-stage
+ARG VUE_APP_SENTRY_DSN
+RUN echo "Sentry dsn set to $VUE_APP_SENTRY_DSN"
 WORKDIR /app
 COPY package*.json ./
 RUN npm install

@@ -1,7 +1,10 @@
-version: '3'
+version: '3.8'
 services:
   jarm_online_gui:
-    build: jarm_online_gui/.
+    build:
+      context: jarm_online_gui/.
+      args:
+        VUE_APP_SENTRY_DSN: $VUE_APP_SENTRY_DSN
     image: jarm_online_gui
     container_name: jarm_online_gui_container
     ports:
