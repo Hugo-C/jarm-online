@@ -1,7 +1,10 @@
-version: '3'
+version: '3.8'
 services:
   jarm_online_gui:
-    build: jarm_online_gui/.
+    build:
+      context: jarm_online_gui/.
+      args:
+        VUE_APP_SENTRY_DSN: $VUE_APP_SENTRY_DSN
     image: jarm_online_gui
     container_name: jarm_online_gui_container
     ports:
@@ -14,5 +17,8 @@ services:
     image: jarm_online_api
     container_name: jarm_online_api_container
     stop_signal: SIGKILL  # SIGTERM is allowed in config starting with rocket.rs 0.5
+    environment:
+      - ROCKET_ENV=production
+      - ROCKET_SENTRY_DSN=${ROCKET_SENTRY_DSN}
     ports:
       - "8000:8000"

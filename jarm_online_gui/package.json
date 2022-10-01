@@ -8,6 +8,8 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@sentry/tracing": "^7.14.0",
+    "@sentry/vue": "^7.14.0",
     "axios": "^0.22.0",
     "core-js": "^3.6.5",
     "equal-vue": "^0.79.3",
