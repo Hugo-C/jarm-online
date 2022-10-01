@@ -1,5 +1,7 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
+mod rocket_sentry;
+
 #[macro_use] extern crate rocket;
 
 use serde::Serialize;
@@ -54,5 +56,9 @@ fn jarm(host: String, port: Option<String>) -> Json<JarmResponse> {
 }
 
 fn main() {
-    rocket::ignite().attach(CORS).mount("/jarm", routes![jarm]).launch();
+    rocket::ignite()
+        .attach(CORS)
+        .attach(rocket_sentry::RocketSentry::fairing())
+        .mount("/jarm", routes![jarm])
+        .launch();
 }

@@ -1,2 +1,2 @@
 /target
-.env  # Expected to contains VUE_APP_SENTRY_DSN
+.env  # Expected to contains VUE_APP_SENTRY_DSN and ROCKET_SENTRY_DSN

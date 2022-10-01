@@ -1,10 +1,10 @@
 FROM rust:1.64 as build-stage
 
 ARG BUILD_TARGET="x86_64-unknown-linux-musl"
-ARG BUILD_OPTIONS="--release --target $BUILD_TARGET"
+ARG BUILD_OPTIONS="--release  --target $BUILD_TARGET"
 
-RUN rustup default nightly
-RUN rustup target add $BUILD_TARGET
+RUN apt update && apt install -y build-essential musl-tools
+RUN rustup default nightly && rustup target add $BUILD_TARGET
 
 WORKDIR /app
 
@@ -24,8 +24,7 @@ RUN cargo build $BUILD_OPTIONS
 COPY . /app/project/
 
 # This is the actual build, touch the main.rs to have newer timestamp
-RUN touch /app/project/src/main.rs
-RUN cargo build $BUILD_OPTIONS -Z unstable-options --out-dir /app/dist
+RUN touch /app/project/src/main.rs && cargo build $BUILD_OPTIONS -Z unstable-options --out-dir /app/dist
 
 FROM alpine:3 as production-stage
 RUN mkdir /app
