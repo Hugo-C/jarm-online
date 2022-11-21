@@ -1,0 +1,116 @@
+---
+- hosts: all
+  become: true
+  vars:
+    project_dir: "/srv/opt/jarm_online"
+
+  tasks:
+    - name: Install aptitude
+      apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+
+    - name: Install required system packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - git
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+        state: latest
+        update_cache: true
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Verify that we have the key with the fingerprint
+      apt_key:
+        id: 0EBFCD88
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Update apt and install docker-ce
+      apt:
+        name: docker-ce
+        state: latest
+        update_cache: true
+
+    - name: Install Docker for Python
+      pip:
+        name:
+          - docker
+          - docker-compose
+
+    - name: Install docker-compose
+      get_url:
+       url : https://github.com/docker/compose/releases/latest/download/docker-compose-Linux-x86_64
+       dest: /usr/local/bin/docker-compose
+       mode: 'u+x,g+x,o+x'
+       force: true
+
+    - name: Clone repo
+      ansible.builtin.git:
+        repo: https://github.com/Hugo-C/jarm-online.git
+        dest: /git/jarm-online
+        single_branch: true
+        version: master
+        update: true
+
+    - name: Create project directory
+      file:
+        path: "{{ project_dir }}"
+        state: directory
+
+    - name: Copy docker-compose.yml
+      ansible.builtin.copy:
+        src: /git/jarm-online/docker-compose.yml.prod  # we use the production one
+        dest: "{{ project_dir }}/docker-compose.yml"
+        force: false  # don't overwrite files
+
+    - name: Create nginx directory
+      file:
+        path: "{{ project_dir }}/nginx"
+        state: directory
+
+    - name: Copy nginx conf
+      ansible.builtin.copy:
+        src: /git/jarm-online/jarm_online_gui/nginx.conf.prod
+        dest: "{{ project_dir }}/nginx/nginx.conf"
+        force: false  # don't overwrite files
+
+    - name: Check that cert file exist
+      stat:
+        path: "{{ project_dir }}/nginx/www.hugocjarm.software.pem"
+      register: cert_result
+
+    - name: Remind cert file has to be manually set
+      fail:
+        msg: "Warning: {{ project_dir }}/nginx/www.hugocjarm.software.pem and its key has to be manually set"
+      when: not cert_result.stat.exists
+      ignore_errors: True
+
+    - name: Check that .env file exist
+      stat:
+        path: "{{ project_dir }}/.env"
+      register: env_result
+
+    - name: Remind .env file has to be manually set
+      fail:
+        msg: "Warning: {{ project_dir }}/.env has to be manually set"
+      when: not env_result.stat.exists
+
+    - name: Start containers
+      community.docker.docker_compose:
+        project_src: "{{ project_dir }}"
+        pull: true

@@ -11,10 +11,11 @@ The GUI is made with Vue.js with the future goal to store previously computed ha
 
 ## Setup
 API/GUI can be setup via [docker](docker-compose.yml).  
-To run the service for production, simply use:
+To run the service, simply use:
 ```shell
 docker-compose up
 ```
+A full set up from scratch can be used via ansible with [ansible_playbook.yml](ansible_playbook.yml) (tested on ubuntu 22.04.1 LTS minimal)  
 For development see [GUI's README](jarm_online_gui/README.md) to spinup the GUI locally and leverage auto-reload.
 
 ## API Endpoints
@@ -28,8 +29,8 @@ See [example.http](examples.http) for examples.
 ## Images statistics
 |                                image                                 | RAM usage |                                                                             image size (compressed)                                                                              |
 |:--------------------------------------------------------------------:|:---------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-| [jarm_online_api](https://hub.docker.com/r/hugocker/jarm_online_api) |   ~1MB    | [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/hugocker/jarm_online_api/latest?style=flat-square)](https://hub.docker.com/r/hugocker/jarm_online_api/tags) |
-| [jarm_online_gui](https://hub.docker.com/r/hugocker/jarm_online_gui) |   ~2MB    | [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/hugocker/jarm_online_gui/latest?style=flat-square)](https://hub.docker.com/r/hugocker/jarm_online_gui/tags) |
+| [jarm_online_api](https://hub.docker.com/r/hugocker/jarm_online_api) |   <10MB   | [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/hugocker/jarm_online_api/latest?style=flat-square)](https://hub.docker.com/r/hugocker/jarm_online_api/tags) |
+| [jarm_online_gui](https://hub.docker.com/r/hugocker/jarm_online_gui) |   <10MB   | [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/hugocker/jarm_online_gui/latest?style=flat-square)](https://hub.docker.com/r/hugocker/jarm_online_gui/tags) |
 
 ## GUI looks
 ![](Doc/website_current_look.png)
