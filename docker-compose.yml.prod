@@ -4,9 +4,9 @@ services:
     image: hugocker/jarm_online_gui
     container_name: jarm_online_gui_container
     volumes:
-       - ./<path>/nginx.conf:/etc/nginx/nginx.conf
-       - ./<path>/www.hugocjarm.software.key:/etc/nginx/ssl/www.hugocjarm.software.key
-       - ./<path>/www.hugocjarm.software.pem:/etc/nginx/ssl/www.hugocjarm.software.pem
+       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+       - ./nginx/www.hugocjarm.software.key:/etc/nginx/ssl/www.hugocjarm.software.key
+       - ./nginx/www.hugocjarm.software.pem:/etc/nginx/ssl/www.hugocjarm.software.pem
     restart: unless-stopped
     ports:
       - "80:80"
@@ -15,8 +15,10 @@ services:
       - jarm_online_api
 
   jarm_online_api:
-    build: .
     image: hugocker/jarm_online_api
     container_name: jarm_online_api_container
     stop_signal: SIGKILL  # SIGTERM is allowed in config starting with rocket.rs 0.5
+    environment:
+      - ROCKET_ENV=production
+      - ROCKET_SENTRY_DSN=${ROCKET_SENTRY_DSN}
     restart: unless-stopped
