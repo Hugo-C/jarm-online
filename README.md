@@ -6,7 +6,8 @@ The GUI is made with Vue.js with the future goal to store previously computed ha
 <div align="center">
 
 # Live version: [hugocjarm.software](https://hugocjarm.software/)  
-[![Website](https://img.shields.io/website?down_color=lightgrey&style=for-the-badge&up_color=brightgreen&up_message=online&url=https%3A%2F%2Fhugocjarm.software%2F)](https://hugocjarm.software/)
+[![Website](https://img.shields.io/website?down_color=lightgrey&style=for-the-badge&up_color=brightgreen&up_message=online&url=https%3A%2F%2Fhugocjarm.software%2F)](https://hugocjarm.software/)  
+[![Docker publish](https://github.com/Hugo-C/jarm-online/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/Hugo-C/jarm-online/actions/workflows/docker-publish.yml)
 </div>
 
 ## Setup

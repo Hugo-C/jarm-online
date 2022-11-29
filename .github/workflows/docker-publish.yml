@@ -1,5 +1,7 @@
 name: Docker publish
 
+concurrency: production
+
 on:
   workflow_run:
     workflows: [ "Rust" ]
