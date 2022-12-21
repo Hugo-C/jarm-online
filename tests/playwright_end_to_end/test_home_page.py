@@ -4,13 +4,19 @@ from fixtures import home_page  # noqa required fixture
 
 
 def test_scan_address(home_page: Page):
+    url_scanned = "https://playwright_dummy_server_container"
+    expected_jarm_result = "21d19d00021d21d00021d19d21d21d1a46380b04d662f0848f508dd171125d"
     expect(home_page).to_have_title(re.compile("Jarm online"))
 
     submit_scan_address_field = home_page.get_by_placeholder("Url or IP")
-    submit_scan_address_field.fill("test.com")
+    submit_scan_address_field.fill(url_scanned)
     submit_scan_address_field.press("Enter")
 
-    # TODO check result
+    # check result
+    result = home_page.get_by_text(re.compile("Jarm hash is:"))  # TODO don't use regex !
+    expect(result).to_contain_text(expected_jarm_result)
+    copy_button = home_page.get_by_role("button", name="content_copy")
+    expect(copy_button).to_be_visible()  # clipboard button is present
 
 
 def test_latest_urls(home_page: Page):

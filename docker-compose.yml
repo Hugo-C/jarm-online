@@ -19,6 +19,6 @@ services:
     stop_signal: SIGKILL  # SIGTERM is allowed in config starting with rocket.rs 0.5
     environment:
       - ROCKET_ENV=production
-      - ROCKET_SENTRY_DSN=${ROCKET_SENTRY_DSN}
+      - ROCKET_SENTRY_DSN=123
     ports:
       - "8000:8000"

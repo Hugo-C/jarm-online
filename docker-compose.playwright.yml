@@ -1,0 +1,39 @@
+services:
+  jarm_online_gui:
+    extends:
+      file: docker-compose.yml
+      service: jarm_online_gui
+    ports:
+      - "80:80"
+    depends_on:
+      - jarm_online_api
+      - playwright_dummy_server
+
+  jarm_online_api:
+    extends:
+      file: docker-compose.yml
+      service: jarm_online_api
+
+  playwright_dummy_server:
+    container_name: playwright_dummy_server_container
+    image: nginx:1.23-alpine
+    volumes:  # TODO move this to a different repo/image
+      - ./tests/playwright_end_to_end/nginx_dummy/nginx.conf:/etc/nginx/nginx.conf
+      - ./tests/playwright_end_to_end/nginx_dummy/ssl/dummy.crt:/etc/nginx/ssl/dummy.crt
+      - ./tests/playwright_end_to_end/nginx_dummy/ssl/dummy.key:/etc/nginx/ssl/dummy.key
+    ports:
+      - "443:443"
+
+  pytest_runner:
+    build:
+      context: .
+      dockerfile: tests/playwright_end_to_end/Dockerfile
+    environment:
+      - PLAYWRIGHT_URL_UNDER_TEST=http://jarm_online_gui/
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - ./tests:/code/tests
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    depends_on:
+      - playwright_dummy_server
+      - jarm_online_gui
