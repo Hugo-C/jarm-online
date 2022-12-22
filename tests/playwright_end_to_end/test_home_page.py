@@ -13,7 +13,7 @@ def test_scan_address(home_page: Page):
     submit_scan_address_field.press("Enter")
 
     # check result
-    result = home_page.get_by_text(re.compile("Jarm hash is:"))  # TODO don't use regex !
+    result = home_page.get_by_text("Jarm hash is:")
     expect(result).to_contain_text(expected_jarm_result)
     copy_button = home_page.get_by_role("button", name="content_copy")
     expect(copy_button).to_be_visible()  # clipboard button is present
@@ -25,7 +25,7 @@ def test_latest_urls(home_page: Page):
 
     # Check details of each url in the list and collapse it afterwards
     for i in range(5):
-        url_detail_button = home_page.get_by_role("button", name=re.compile(f"URL {i + 1} unfold_more"))
+        url_detail_button = home_page.get_by_role("button", name=f"URL {i + 1}")
         url_detail = home_page.get_by_text(text=f"JARM and it's maliciousness about URL {i + 1}", exact=True)
 
         expect(url_detail).to_be_hidden()

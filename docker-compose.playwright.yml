@@ -13,6 +13,8 @@ services:
     extends:
       file: docker-compose.yml
       service: jarm_online_api
+    environment:
+      - ROCKET_SENTRY_DSN=123  # this way sentry is disabled but do not crash
 
   playwright_dummy_server:
     container_name: playwright_dummy_server_container
@@ -24,16 +26,14 @@ services:
     ports:
       - "443:443"
 
-  pytest_runner:
+  pytest_runner:  # TODO move this to a different repo/image
     build:
       context: .
       dockerfile: tests/playwright_end_to_end/Dockerfile
     environment:
       - PLAYWRIGHT_URL_UNDER_TEST=http://jarm_online_gui/
-      - DISPLAY=${DISPLAY}
     volumes:
       - ./tests:/code/tests
-      - /tmp/.X11-unix:/tmp/.X11-unix
     depends_on:
       - playwright_dummy_server
       - jarm_online_gui

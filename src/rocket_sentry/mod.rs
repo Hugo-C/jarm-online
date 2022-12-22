@@ -48,7 +48,7 @@ impl Fairing for RocketSentry {
             Ok(dsn) => {
                 self.init(dsn);
             }
-            Err(err) => eprintln!("Sentry disabled: {}", err),
+            Err(err) => eprintln!("Sentry disabled: {err}"),
         }
         Ok(rocket)
     }
