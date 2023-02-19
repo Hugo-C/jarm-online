@@ -1,17 +1,17 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
-#[macro_use] extern crate rocket;
+#[macro_use]
+extern crate rocket;
 
 pub mod utils;
 
-use std::time::Duration;
-use serde::Serialize;
+use rocket::Rocket;
 use rocket_contrib::json::Json;
 use rust_jarm::Jarm;
-use rocket::Rocket;
+use serde::Serialize;
+use std::time::Duration;
 
 const SCAN_TIMEOUT_IN_SECONDS: u64 = 15;
-
 
 #[get("/")]
 fn index() -> &'static str {
@@ -22,7 +22,7 @@ fn index() -> &'static str {
 struct JarmResponse {
     host: String,
     port: String,
-    jarm_hash: String
+    jarm_hash: String,
 }
 
 #[get("/?<host>&<port>")]

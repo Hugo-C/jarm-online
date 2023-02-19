@@ -2,10 +2,10 @@
 
 mod rocket_sentry;
 
+use jarm_online::set_up_rocket;
+use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::Header;
 use rocket::{Request, Response};
-use rocket::fairing::{Fairing, Info, Kind};
-use jarm_online::set_up_rocket;
 
 pub struct CORS;
 
@@ -13,7 +13,7 @@ impl Fairing for CORS {
     fn info(&self) -> Info {
         Info {
             name: "Add CORS headers to responses",
-            kind: Kind::Response
+            kind: Kind::Response,
         }
     }
 

@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests_api {
-    use rocket::local::Client;
-    use rocket::http::Status;
     use jarm_online::set_up_rocket;
+    use rocket::http::Status;
+    use rocket::local::Client;
 
     #[test]
     fn hello_world() {

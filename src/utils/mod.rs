@@ -10,7 +10,7 @@ fn extract_host(url: String) -> String {
     let optional_groups = RE.captures(&url);
     match optional_groups {
         None => url,  // Simply return the url as it is if the regex didn't match
-        Some(groups) =>  groups.name("host").unwrap().as_str().to_string(),
+        Some(groups) => groups.name("host").unwrap().as_str().to_string(),
     }
 }
 
