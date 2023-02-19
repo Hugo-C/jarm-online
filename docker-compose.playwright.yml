@@ -18,18 +18,12 @@ services:
 
   playwright_dummy_server:
     container_name: playwright_dummy_server_container
-    image: nginx:1.23-alpine
-    volumes:  # TODO move this to a different repo/image
-      - ./tests/playwright_end_to_end/nginx_dummy/nginx.conf:/etc/nginx/nginx.conf
-      - ./tests/playwright_end_to_end/nginx_dummy/ssl/dummy.crt:/etc/nginx/ssl/dummy.crt
-      - ./tests/playwright_end_to_end/nginx_dummy/ssl/dummy.key:/etc/nginx/ssl/dummy.key
+    image: hugocker/nginx_tls_dummy_server:latest
     ports:
       - "443:443"
 
-  pytest_runner:  # TODO move this to a different repo/image
-    build:
-      context: .
-      dockerfile: tests/playwright_end_to_end/Dockerfile
+  pytest_runner:
+    image: hugocker/playwright_runner
     environment:
       - PLAYWRIGHT_URL_UNDER_TEST=http://jarm_online_gui/
     volumes:
