@@ -1,0 +1,15 @@
+name: Playwright
+
+concurrency: production
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run playwright test
+        run: docker compose -f docker-compose.playwright.yml run pytest_runner

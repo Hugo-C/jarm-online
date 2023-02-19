@@ -4,7 +4,7 @@ concurrency: production
 
 on:
   workflow_run:
-    workflows: [ "Rust" ]
+    workflows: [ "Playwright" ]
     branches: [ master ]
     types:
       - completed
