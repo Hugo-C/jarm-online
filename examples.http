@@ -68,3 +68,13 @@ client.test("Port is invalid", function() {
   client.assert(response.status === 500, "Response status is not 500");  // TODO returns 400 instead
 });
 %}
+
+### Host is known to not respond
+
+GET http://localhost:8000/jarm?host=https://163.com
+
+> {%
+client.test("Port is invalid", function() {
+  client.assert(response.status === 504);
+});
+%}

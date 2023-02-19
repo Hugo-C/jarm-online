@@ -7,7 +7,7 @@ edition = "2018"
 
 [dependencies]
 rocket = "0.4.11"
-rust_jarm = "0.2.0"
+rust_jarm = "0.3.1"
 serde = { version = "1.0.152", features = ["derive"] }
 lazy_static = "1.4.0"
 regex = "1.7.1"

@@ -2,15 +2,10 @@
 
 mod rocket_sentry;
 
-#[macro_use] extern crate rocket;
-
-use serde::Serialize;
-use rocket_contrib::json::Json;
-use rust_jarm::Jarm;
 use rocket::http::Header;
 use rocket::{Request, Response};
 use rocket::fairing::{Fairing, Info, Kind};
-use jarm_online::sanitize_host;
+use jarm_online::set_up_rocket;
 
 pub struct CORS;
 
@@ -30,35 +25,9 @@ impl Fairing for CORS {
     }
 }
 
-#[get("/")]
-fn index() -> &'static str {
-    "Hello, world!"
-}
-
-#[derive(Serialize)]
-struct JarmResponse {
-    host: String,
-    port: String,
-    jarm_hash: String
-}
-
-#[get("/?<host>&<port>")]
-fn jarm(host: String, port: Option<String>) -> Json<JarmResponse> {
-    let _port = port.unwrap_or_else(|| "443".to_string());
-    let _host = sanitize_host(&host);
-    let jarm_hash = Jarm::new(
-        _host.clone(),
-        _port.clone(),
-    )
-        .hash()
-        .expect("failed to connect");  // TODO handle error
-    Json(JarmResponse { host: _host, port: _port, jarm_hash })
-}
-
 fn main() {
-    rocket::ignite()
+    set_up_rocket()
         .attach(CORS)
         .attach(rocket_sentry::RocketSentry::fairing())
-        .mount("/jarm", routes![jarm])
         .launch();
 }
