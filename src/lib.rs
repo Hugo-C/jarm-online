@@ -48,26 +48,31 @@ fn jarm(host: String, port: Option<String>) -> Json<JarmResponse> {
     let jarm_hash = match jarm_scan.hash() {
         Ok(hash) => hash,
         Err(jarm_error) => {
-            let (error_type, error_message) = match jarm_error {
-                JarmError::DnsResolve(e) => {
-                    ("Dns resolve error".to_string(), format!("{e:?}"))
-                }
-                JarmError::Connection(e) => {
-                    ("Connection error".to_string(), format!("{e:?}"))
-                }
-                JarmError::Io(e) => {
-                    ("Input/output error".to_string(), format!("{e:?}"))
-                }
-            };
-            return Json(JarmResponse {
-                host: "".to_string(),
-                port: "".to_string(),
-                jarm_hash: "".to_string(),
-                error: Some(ErrorResponse { error_type, error_message }),
-            });
+            return build_error_json(jarm_error);
         }
     };
     Json(JarmResponse { host: _host, port: _port, jarm_hash, error: None })
+}
+
+fn build_error_json(jarm_error: JarmError) -> Json<JarmResponse> {
+    // error_message is a debug view of a an unknown error, to be improved.
+    let (error_type, error_message) = match jarm_error {
+        JarmError::DnsResolve(e) => {
+            ("Dns resolve error".to_string(), format!("{e:?}"))
+        }
+        JarmError::Connection(e) => {
+            ("Connection error".to_string(), format!("{e:?}"))
+        }
+        JarmError::Io(e) => {
+            ("Input/output error".to_string(), format!("{e:?}"))
+        }
+    };
+    Json(JarmResponse {
+        host: "".to_string(),
+        port: "".to_string(),
+        jarm_hash: "".to_string(),
+        error: Some(ErrorResponse { error_type, error_message }),
+    })
 }
 
 pub fn set_up_rocket() -> Rocket {
