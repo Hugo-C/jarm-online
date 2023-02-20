@@ -30,11 +30,10 @@ struct JarmResponse {
 }
 
 pub fn scan_timeout_in_seconds() -> u64 {
-    return env::var("SCAN_TIMEOUT_IN_SECONDS")
-        .or::<String>(Ok(DEFAULT_SCAN_TIMEOUT_IN_SECONDS.to_string()))
-        .unwrap()
+    env::var("SCAN_TIMEOUT_IN_SECONDS")
+        .unwrap_or(DEFAULT_SCAN_TIMEOUT_IN_SECONDS.to_string())
         .parse::<u64>()
-        .expect("Valid timeout value");
+        .expect("Valid timeout value")
 }
 
 #[get("/?<host>&<port>")]
