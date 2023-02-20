@@ -65,6 +65,16 @@ GET http://localhost:8000/jarm?host=google.com&port=wow
 
 > {%
 client.test("Port is invalid", function() {
-  client.assert(response.status === 500, "Response status is not 500");  // TODO returns 400 instead
+  client.assert(response.body.error.error_type === "Dns resolve error");
+});
+%}
+
+### Host is known to not respond
+
+GET http://localhost:8000/jarm?host=https://163.com
+
+> {%
+client.test("Connection error", function() {
+  client.assert(response.body.error.error_type === "Connection error");
 });
 %}
