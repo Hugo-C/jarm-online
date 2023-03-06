@@ -91,7 +91,14 @@ export default {
       };
       axios.get(path, payload)
           .then((res) => {
-            this.jarmHashResult.hash = res.data.jarm_hash;
+            if (res.data.error) {
+              this.$Notification.danger({
+                title: 'API returned an error',
+                text: res.data.error.error_type,
+              })
+            } else {
+              this.jarmHashResult.hash = res.data.jarm_hash;
+            }
             this.computingJarmHash = false;
           })
           .catch((error) => {
