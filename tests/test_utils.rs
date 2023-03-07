@@ -1,10 +1,9 @@
 #[cfg(test)]
-mod tests_api {
+mod test_utils {
     use std::env;
     use std::sync::Mutex;
     use lazy_static::lazy_static;
-    use jarm_online::{DEFAULT_SCAN_TIMEOUT_IN_SECONDS, scan_timeout_in_seconds, set_up_rocket};
-    use rocket::local::Client;
+    use jarm_online::{DEFAULT_SCAN_TIMEOUT_IN_SECONDS, scan_timeout_in_seconds};
 
     lazy_static! {
         static ref ENV_VAR_MUTEX: Mutex<()> = Mutex::default();  // env variables are a shared resource
@@ -39,16 +38,5 @@ mod tests_api {
         let result = std::panic::catch_unwind(|| scan_timeout_in_seconds());
         assert!(result.is_err());
         env::remove_var("SCAN_TIMEOUT_IN_SECONDS");  // cleanup the env var
-    }
-
-    #[test]
-    fn invalid_port() {
-        let client = Client::new(set_up_rocket()).expect("valid rocket instance");
-        let expected_response = r#"{"host":"","port":"","jarm_hash":"","error":{"error_type":"Dns resolve error","error_message":"DetailedError { underlying_error: Some(Error { kind: InvalidInput, message: \"invalid port value\" }) }"}}"#;
-
-
-        let mut response = client.get("/jarm?host=host.fr&port=invalidPort").dispatch();
-
-        assert_eq!(response.body_string(), Some(expected_response.into()));
     }
 }
