@@ -38,7 +38,7 @@ mod test_alexa_top1m {
         assert_eq!(top1m.len(), 8);
         let hash = "29d3fd00029d29d21c42d43d00041d188e8965256b2536432a9bd447ae607f";
         let domains = top1m.get(hash).unwrap();
-        assert_eq!(domains, &vec![
+        assert_eq!(domains, &vec![  // list is ordered with top rank first
             RankedDomain {
                 rank: 1,
                 domain: "google.com".to_string(),
