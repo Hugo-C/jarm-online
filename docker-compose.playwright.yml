@@ -15,6 +15,9 @@ services:
       service: jarm_online_api
     environment:
       - ROCKET_SENTRY_DSN=123  # this way sentry is disabled but do not crash
+      - ALEXA_TOP1M_RAW_DATA_PATH=/alexa_top1M.csv
+    volumes:
+      - ./tests/fixtures_data/alexa_top1M.csv:/alexa_top1M.csv
 
   playwright_dummy_server:
     container_name: playwright_dummy_server_container
