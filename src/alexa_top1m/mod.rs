@@ -41,6 +41,10 @@ impl AlexaTop1M {
         })
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.jarm_to_ranked_domain.is_empty()
+    }
+
     pub fn len(&self) -> usize {
         self.jarm_to_ranked_domain.len()
     }

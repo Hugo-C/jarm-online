@@ -12,6 +12,7 @@ mod test_alexa_top1m {
     fn build_alexa_top1m_struct_zero_hash(alexa_top1m_path: &Path) {
         let top1m = AlexaTop1M::new(alexa_top1m_path).expect("built successfully");
 
+        assert!(!top1m.is_empty());
         assert_eq!(top1m.len(), 8);
         let hash = "123";
         let domains = top1m.get(hash);
