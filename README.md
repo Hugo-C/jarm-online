@@ -20,12 +20,19 @@ A full set up from scratch can be used via ansible with [ansible_playbook.yml](a
 For development see [GUI's README](jarm_online_gui/README.md) to spinup the GUI locally and leverage auto-reload.
 
 ## API Endpoints
-A single endpoint is currently available:
+The list of endpoints currently available (see also [examples](examples)).
+
+### Scan a website to obtain it's jarm fingerprint
 ````http request
 GET api/v1/jarm?host=<host>&port=<port>
 ````
 It takes a required `host` parameter and optionally `port` (default to 443).  
-See [example.http](examples.http) for examples.
+
+### Retrieve domains from alexa top 1 million that match a jarm hash
+````http request
+GET api/v1/alexa-overlap?jarm_hash=<jarm-hash>
+````
+The returned list is ordered by top alexa rank first  
 
 ## Images statistics
 |                                image                                 | RAM usage |                                                                             image size (compressed)                                                                              |
