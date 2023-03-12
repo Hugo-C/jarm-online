@@ -4,9 +4,13 @@
 extern crate rocket;
 
 pub mod utils;
+pub mod alexa_top1m;
+
+use crate::alexa_top1m::{AlexaTop1M, RankedDomain};
 
 use std::env;
-use rocket::Rocket;
+use std::path::Path;
+use rocket::{Rocket, State};
 use rocket_contrib::json::Json;
 use rust_jarm::Jarm;
 use serde::Serialize;
@@ -29,11 +33,22 @@ struct JarmResponse {
     error: Option<ErrorResponse>,
 }
 
+#[derive(Serialize)]
+struct AlexaOverlapResponse {
+    overlapping_domains: Vec<RankedDomain>,
+}
+
 pub fn scan_timeout_in_seconds() -> u64 {
     env::var("SCAN_TIMEOUT_IN_SECONDS")
         .unwrap_or(DEFAULT_SCAN_TIMEOUT_IN_SECONDS.to_string())
         .parse::<u64>()
         .expect("Valid timeout value")
+}
+
+pub fn alexa_top1m_raw_data_path() -> Box<Path> {
+    let raw_path = env::var("ALEXA_TOP1M_RAW_DATA_PATH")
+        .expect("ALEXA_TOP1M_RAW_DATA_PATH env var has to be set");
+    Path::new(&raw_path).into()
 }
 
 #[get("/?<host>&<port>")]
@@ -52,6 +67,15 @@ fn jarm(host: String, port: Option<String>) -> Json<JarmResponse> {
         }
     };
     Json(JarmResponse { host: _host, port: _port, jarm_hash, error: None })
+}
+
+#[get("/?<jarm_hash>")]
+fn alexa_overlap(alexa_top1m: State<AlexaTop1M>, jarm_hash: String) -> Json<AlexaOverlapResponse> {  // TODO try str
+    let overlap = match alexa_top1m.get(jarm_hash.as_str()) {
+        None => vec![],
+        Some(overlap) => overlap.to_vec()
+    };
+    Json(AlexaOverlapResponse { overlapping_domains: overlap })
 }
 
 fn build_error_json(jarm_error: JarmError) -> Json<JarmResponse> {
@@ -76,6 +100,10 @@ fn build_error_json(jarm_error: JarmError) -> Json<JarmResponse> {
 }
 
 pub fn set_up_rocket() -> Rocket {
+    let alexa_top1m = AlexaTop1M::new(&alexa_top1m_raw_data_path())
+        .expect("AlexaTop1M built correctly");
     rocket::ignite()
         .mount("/jarm", routes![jarm])
+        .mount("/alexa-overlap", routes![alexa_overlap])
+        .manage(alexa_top1m)
 }
