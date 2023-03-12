@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod tests {
+mod test_sanitize_host {
     use jarm_online::utils::sanitize_host;
 
     #[test]
