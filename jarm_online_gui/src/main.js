@@ -19,7 +19,13 @@ let sentry_dsn = process.env.VUE_APP_SENTRY_DSN
 Sentry.init({
   app,
   dsn: sentry_dsn,
+  integrations: [
+    new Sentry.BrowserTracing(),
+    new Sentry.Replay(),
+  ],
   tracesSampleRate: 1.0,
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
 });
 
 app
