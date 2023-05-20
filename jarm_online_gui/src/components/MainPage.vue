@@ -56,7 +56,7 @@
     </h4>
     <it-collapse>
       <it-collapse-item v-for='index in 5' :key='index' :title="'URL ' + index">
-         JARM and it's maliciousness about URL {{ index }}
+        JARM and it's maliciousness about URL {{ index }}
       </it-collapse-item>
     </it-collapse>
   </div>
@@ -76,38 +76,38 @@ export default {
     }
   },
   methods: {
-    onSubmit(evt) {
+    async onSubmit(evt) {
       evt.preventDefault();
-      this.computingJarmHash = true;
-      this.jarmHashResult.hash = null;
-      this.lookUpUrl(this.inputUrl)
+      this.jarmHashResult.hash = null;  // Force reset
+      this.jarmHashResult.hash = await this.lookUpUrl(this.inputUrl)
     },
-    lookUpUrl(url) {
+    async lookUpUrl(url) {
+      let jarm_hash = null;
+      this.computingJarmHash = true;
       const path = '/api/v1/jarm';
       const payload = {
         params: {
           host: url,
         }
       };
-      axios.get(path, payload)
-          .then((res) => {
-            if (res.data.error) {
-              this.$Notification.danger({
-                title: 'API returned an error',
-                text: res.data.error.error_type,
-              })
-            } else {
-              this.jarmHashResult.hash = res.data.jarm_hash;
-            }
-            this.computingJarmHash = false;
+      try {
+        const res = await axios.get(path, payload);
+        if (res.data.error) {
+          this.$Notification.danger({
+            title: 'API returned an error',
+            text: res.data.error.error_type,
           })
-          .catch((error) => {
-            this.$Notification.danger({
-              title: 'Failed to query the API',
-              text: error,
-            })
-            this.computingJarmHash = false;
-          });
+        } else {
+          jarm_hash = res.data.jarm_hash;
+        }
+      } catch (error) {
+        this.$Notification.danger({
+          title: 'Failed to query the API',
+          text: error,
+        })
+      }
+      this.computingJarmHash = false;
+      return jarm_hash;
     },
     async copy() {
       try {
