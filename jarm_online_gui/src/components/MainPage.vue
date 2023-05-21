@@ -1,64 +1,90 @@
 <template>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
         rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.3/gh-fork-ribbon.min.css"/>
   <a id="darkRibbon" class="github-fork-ribbon right-top" href="https://github.com/Hugo-C/jarm-online"
      data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
   <form class="searchBarDiv" @submit="onSubmit">
-    <it-input v-model="inputUrl" prefix-icon="search" label-top="Compute JARM hash" placeholder="Url or IP"
-              autofocus ref="inputBar"/>
+    <v-text-field
+        variant="solo-inverted"
+        label="Compute JARM hash"
+        placeholder="8.8.8.8 | host.com/path"
+        prepend-inner-icon="search"
+        autofocus
+        loading
+        @click:prepend-inner="onSubmit"
+        v-model="inputUrl"
+    >
+      <template v-slot:loader>
+        <v-progress-linear
+            :active="computingJarmHash"
+            color="secondary"
+            absolute
+            rounded
+            height="5"
+            indeterminate
+        ></v-progress-linear>
+      </template>
+    </v-text-field>
     <p id="disclaimerLine">
-      <it-tag id="disclaimerTag" type="primary" filled>Disclaimer:</it-tag>
+      <v-chip label variant="elevated" color="primary">Disclaimer:</v-chip>
       the URL and its hash are saved and displayed publicly
     </p>
   </form>
-  <div v-if="computingJarmHash || jarmHashResult.hash">
-    <it-divider/>
-    <it-progressbar infinite v-if="computingJarmHash"/>
+  <v-expand-transition>
     <div v-if="jarmHashResult.hash">
       <div class="hashDisplay">
-        Jarm hash is: <b>{{ jarmHashResult.hash }}</b>
-        <it-popover placement="right">
-          <it-button @click="copy" id="copyButton">
-            <it-icon name="content_copy" color="#000"/>
-          </it-button>
-          <template #content>Copied!</template>
-        </it-popover>
+        <v-card variant="outlined" class="mx-auto pa-5" width="70%">
+          JARM hash is: <b size="large">{{ jarmHashResult.hash }}</b>
+          <v-btn @click="copy" variant="text" prepend-icon="content_copy" class="ml-2" size="small"
+                 stacked>
+            Copy Me
+            <v-tooltip :open-on-hover="false" :open-on-click="true" :no-click-animation="true" text="Copied!"
+                       activator="parent"/>
+          </v-btn>
+        </v-card>
       </div>
-      <it-divider/>
       <div>
         Alexa top 1 Million overlap:
-        <it-tooltip content="Star the github repo to see new releases in your feed" placement="bottom">
-          <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
-            <it-tag type="black" filled>not yet implemented</it-tag>
-          </a>
-        </it-tooltip>
-        <it-divider vertical/>
+        <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
+          <v-chip label size="small" class="ma-1" variant="elevated" color="info">Not yet implemented
+            <v-tooltip
+                text="Star the github repo to see new releases in your feed"
+                location="bottom" activator="parent"/>
+          </v-chip>
+        </a>
+        <v-divider
+            vertical
+            color="info"
+            :thickness="2"
+            class="ma-1 border-opacity-100"
+        ></v-divider>
         Known malicious malware family:
-        <it-tooltip content="Star the github repo to see new releases in your feed" placement="bottom">
-          <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
-            <it-tag type="black" filled>not yet implemented</it-tag>
-          </a>
-        </it-tooltip>
+        <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
+          <v-chip label size="small" class="ma-1" variant="elevated" color="info">Not yet implemented
+            <v-tooltip
+                text="Star the github repo to see new releases in your feed"
+                location="bottom" activator="parent"/>
+          </v-chip>
+        </a>
       </div>
     </div>
-  </div>
+  </v-expand-transition>
+
   <div id="footer">
-    <it-divider/>
+    <v-divider :thickness="2" class="border-opacity-100" color="info" inset/>
     <h4> Latest urls requested
-      <it-tooltip content="Star the github repo to see new releases in your feed" placement="bottom">
-        <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
-          <it-tag type="black" filled>not yet implemented</it-tag>
-        </a>
-      </it-tooltip>
+      <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
+        <v-chip label size="small" class="ma-1" variant="elevated" color="info">Not yet implemented
+          <v-tooltip
+              text="Star the github repo to see new releases in your feed"
+              location="bottom" activator="parent"/>
+        </v-chip>
+      </a>
     </h4>
-    <it-collapse>
-      <it-collapse-item v-for='index in 5' :key='index' :title="'URL ' + index">
-        JARM and it's maliciousness about URL {{ index }}
-      </it-collapse-item>
-    </it-collapse>
+    <!--    TODO use https://vuetifyjs.com/en/components/expansion-panels/-->
   </div>
 </template>
 
@@ -69,6 +95,7 @@ import useClipboard from 'vue-clipboard3'
 export default {
   data() {
     return {
+      inputUrl: null,
       jarmHashResult: {
         hash: null,
       },
@@ -93,18 +120,18 @@ export default {
       try {
         const res = await axios.get(path, payload);
         if (res.data.error) {
-          this.$Notification.danger({
-            title: 'API returned an error',
-            text: res.data.error.error_type,
-          })
+          // this.$Notification.danger({
+          //   title: 'API returned an error',
+          //   text: res.data.error.error_type,
+          // })
         } else {
           jarm_hash = res.data.jarm_hash;
         }
       } catch (error) {
-        this.$Notification.danger({
-          title: 'Failed to query the API',
-          text: error,
-        })
+        // this.$Notification.danger({
+        //   title: 'Failed to query the API',
+        //   text: error,
+        // })
       }
       this.computingJarmHash = false;
       return jarm_hash;
