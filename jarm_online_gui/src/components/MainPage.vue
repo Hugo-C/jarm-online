@@ -38,8 +38,7 @@
       <div class="hashDisplay">
         <v-card variant="outlined" class="mx-auto pa-5" width="70%">
           JARM hash is: <b size="large">{{ jarmHashResult.hash }}</b>
-          <v-btn @click="copy" variant="text" prepend-icon="content_copy" class="ml-2" size="small"
-                 stacked>
+          <v-btn @click="copy" variant="text" prepend-icon="content_copy" class="ml-2" size="small" stacked>
             Copy Me
             <v-tooltip :open-on-hover="false" :open-on-click="true" :no-click-animation="true" text="Copied!"
                        activator="parent"/>
