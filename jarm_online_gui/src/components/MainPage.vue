@@ -29,7 +29,7 @@
       </template>
     </v-text-field>
     <p id="disclaimerLine">
-      <v-chip label variant="elevated" color="primary">Disclaimer:</v-chip>
+      <v-chip label variant="elevated" color="primary-darken-1">Disclaimer:</v-chip>
       the URL and its hash are saved and displayed publicly
     </p>
   </form>
@@ -86,11 +86,37 @@
     </h4>
     <!--    TODO use https://vuetifyjs.com/en/components/expansion-panels/-->
   </div>
+  <!--  Snackbar for notifications-->
+  <v-snackbar
+      v-model="this.notification.isDisplayed"
+      :timeout="10000"
+      variant="flat"
+      color="error"
+      :absolute="true"
+      class="ma-5 opacity-100"
+      location="top right"
+      z-index="15000"
+      multi-line
+      vertical
+  >
+    <div class="text-subtitle-1 pb-2">{{ notification.title }}</div>
+    <p>{{ notification.body }}</p>
+    <template v-slot:actions>
+      <v-btn
+          variant="text"
+          @click="notification.clear()"
+      >
+        Close
+      </v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script>
 import axios from 'axios';
 import useClipboard from 'vue-clipboard3'
+
+import {notification} from './notification';
 
 export default {
   data() {
@@ -99,7 +125,8 @@ export default {
       jarmHashResult: {
         hash: null,
       },
-      computingJarmHash: false
+      computingJarmHash: false,
+      notification: notification,
     }
   },
   methods: {
@@ -120,18 +147,18 @@ export default {
       try {
         const res = await axios.get(path, payload);
         if (res.data.error) {
-          // this.$Notification.danger({
-          //   title: 'API returned an error',
-          //   text: res.data.error.error_type,
-          // })
+          this.notification.display(
+              'API returned an error',
+              res.data.error.error_type,
+          );
         } else {
           jarm_hash = res.data.jarm_hash;
         }
       } catch (error) {
-        // this.$Notification.danger({
-        //   title: 'Failed to query the API',
-        //   text: error,
-        // })
+        this.notification.display(
+            'Failed to query the API',
+            error,
+        );
       }
       this.computingJarmHash = false;
       return jarm_hash;

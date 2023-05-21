@@ -4,14 +4,13 @@ import {createVuetify} from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import {aliases, md} from 'vuetify/iconsets/md'
-// import colors from 'vuetify/lib/util/colors'
 
 const myCustomLightTheme = {
     dark: false,
     colors: {
         primary: '#2196F3',
         secondary: '#F37F21',
-        error: '#B00020',
+        error: '#F44336',
         info: '#232323',
         success: '#4CAF50',
     },
