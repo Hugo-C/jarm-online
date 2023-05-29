@@ -47,13 +47,24 @@
       </div>
       <div>
         Alexa top 1 Million overlap:
-        <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
-          <v-chip label size="small" class="ma-1" variant="elevated" color="info">Not yet implemented
-            <v-tooltip
-                text="Star the github repo to see new releases in your feed"
-                location="bottom" activator="parent"/>
-          </v-chip>
-        </a>
+        <v-progress-circular
+            v-if="computingAlexaRank"
+            indeterminate
+            color="secondary"
+        ></v-progress-circular>
+        <span v-else-if="this.jarmHashResult.alexa.topRank != null">
+          <v-chip label variant="elevated" color="primary">{{ this.jarmHashResult.alexa.topRank }}th Rank</v-chip>
+          <b class="pa-2" size="large"> {{ this.jarmHashResult.alexa.topDomain }}</b>
+          <a
+              v-if="this.jarmHashResult.alexa.raw_result.overlapping_domains.length > 1"
+              :href="'/api/v1/alexa-overlap?jarm_hash=' + jarmHashResult.hash">
+            See {{
+              this.jarmHashResult.alexa.raw_result.overlapping_domains.length - 1
+            }} other matching domains</a>
+        </span>
+        <span v-else>
+          <v-chip label variant="elevated" color="primary">No match found</v-chip>
+        </span>
         <v-divider
             vertical
             color="info"
@@ -123,16 +134,31 @@ export default {
       inputUrl: null,
       jarmHashResult: {
         hash: null,
+        alexa: {
+          raw_result: null,
+          topRank: null,
+          topDomain: null,
+        },
       },
       computingJarmHash: false,
+      computingAlexaRank: false,
       notification: notification,
     }
   },
   methods: {
     async onSubmit(evt) {
       evt.preventDefault();
-      this.jarmHashResult.hash = null;  // Force reset
-      this.jarmHashResult.hash = await this.lookUpUrl(this.inputUrl)
+      // Force reset
+      this.jarmHashResult.hash = null;
+      this.jarmHashResult.alexa.raw_result = null;
+      this.jarmHashResult.alexa.topRank = null;
+      this.jarmHashResult.alexa.topDomain = null;
+
+      this.jarmHashResult.hash = await this.lookUpUrl(this.inputUrl);
+      this.jarmHashResult.alexa.raw_result = await this.alexaOverlap(this.jarmHashResult.hash);
+      // Parse alexa result
+      this.jarmHashResult.alexa.topRank = this.jarmHashResult.alexa.raw_result.overlapping_domains[0].rank
+      this.jarmHashResult.alexa.topDomain = this.jarmHashResult.alexa.raw_result.overlapping_domains[0].domain
     },
     async lookUpUrl(url) {
       let jarm_hash = null;
@@ -161,6 +187,27 @@ export default {
       }
       this.computingJarmHash = false;
       return jarm_hash;
+    },
+    async alexaOverlap(hash) {
+      this.computingAlexaRank = true;
+      const path = '/api/v1/alexa-overlap';
+      const payload = {
+        params: {
+          jarm_hash: hash,
+        }
+      };
+      let result;
+      try {
+        const res = await axios.get(path, payload);
+        result = res.data
+      } catch (error) {
+        this.notification.display(
+            'Failed to query the API',
+            error,
+        );
+      }
+      this.computingAlexaRank = false;
+      return result;
     },
     async copy() {
       try {
