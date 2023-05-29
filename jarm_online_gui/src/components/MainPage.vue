@@ -155,6 +155,9 @@ export default {
       this.jarmHashResult.alexa.topDomain = null;
 
       this.jarmHashResult.hash = await this.lookUpUrl(this.inputUrl);
+      if (!this.jarmHashResult.hash) {
+        return;  // Skip alexa as no hash was returned
+      }
       this.jarmHashResult.alexa.raw_result = await this.alexaOverlap(this.jarmHashResult.hash);
       // Parse alexa result
       this.jarmHashResult.alexa.topRank = this.jarmHashResult.alexa.raw_result.overlapping_domains[0].rank

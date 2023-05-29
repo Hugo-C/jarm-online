@@ -22,6 +22,12 @@ def test_scan_address(home_page: Page):
     copy_button = home_page.get_by_role("button", name="COPY")
     expect(copy_button).to_be_visible()  # clipboard button is present
 
+    # Alexa overlap is displayed
+    assert home_page.get_by_text("fake_site_1.com").is_visible()
+    assert home_page.get_by_text("11th Rank").is_visible()
+    alexa_overlap_link = home_page.get_by_role("link", name="1 other matching domains")
+    expect(alexa_overlap_link).to_have_attribute("href", f"/api/v1/alexa-overlap?jarm_hash={expected_jarm_result}")
+
 
 @pytest.mark.skip(reason="TODO implement feature and rewrite tests")
 def test_latest_urls(home_page: Page):
