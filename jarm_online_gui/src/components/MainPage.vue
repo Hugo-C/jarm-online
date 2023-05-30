@@ -1,113 +1,216 @@
 <template>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
         rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.3/gh-fork-ribbon.min.css"/>
   <a id="darkRibbon" class="github-fork-ribbon right-top" href="https://github.com/Hugo-C/jarm-online"
      data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
   <form class="searchBarDiv" @submit="onSubmit">
-    <it-input v-model="inputUrl" prefix-icon="search" label-top="Compute JARM hash" placeholder="Url or IP"
-              autofocus ref="inputBar"/>
+    <v-text-field
+        variant="solo-inverted"
+        label="Compute JARM hash"
+        placeholder="8.8.8.8 | host.com/path"
+        prepend-inner-icon="search"
+        autofocus
+        loading
+        @click:prepend-inner="onSubmit"
+        v-model="inputUrl"
+    >
+      <template v-slot:loader>
+        <v-progress-linear
+            :active="computingJarmHash"
+            color="secondary"
+            absolute
+            rounded
+            height="5"
+            indeterminate
+        ></v-progress-linear>
+      </template>
+    </v-text-field>
     <p id="disclaimerLine">
-      <it-tag id="disclaimerTag" type="primary" filled>Disclaimer:</it-tag>
+      <v-chip label variant="elevated" color="primary-darken-1">Disclaimer:</v-chip>
       the URL and its hash are saved and displayed publicly
     </p>
   </form>
-  <div v-if="computingJarmHash || jarmHashResult.hash">
-    <it-divider/>
-    <it-progressbar infinite v-if="computingJarmHash"/>
+  <v-expand-transition>
     <div v-if="jarmHashResult.hash">
       <div class="hashDisplay">
-        Jarm hash is: <b>{{ jarmHashResult.hash }}</b>
-        <it-popover placement="right">
-          <it-button @click="copy" id="copyButton">
-            <it-icon name="content_copy" color="#000"/>
-          </it-button>
-          <template #content>Copied!</template>
-        </it-popover>
+        <v-card variant="outlined" class="mx-auto pa-5" width="70%">
+          JARM hash is: <b size="large">{{ jarmHashResult.hash }}</b>
+          <v-btn @click="copy" variant="text" prepend-icon="content_copy" class="ml-2" size="small" stacked>
+            Copy Me
+            <v-tooltip :open-on-hover="false" :open-on-click="true" :no-click-animation="true" text="Copied!"
+                       activator="parent"/>
+          </v-btn>
+        </v-card>
       </div>
-      <it-divider/>
       <div>
         Alexa top 1 Million overlap:
-        <it-tooltip content="Star the github repo to see new releases in your feed" placement="bottom">
-          <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
-            <it-tag type="black" filled>not yet implemented</it-tag>
-          </a>
-        </it-tooltip>
-        <it-divider vertical/>
+        <v-progress-circular
+            v-if="computingAlexaRank"
+            indeterminate
+            color="secondary"
+        ></v-progress-circular>
+        <span v-else-if="this.jarmHashResult.alexa.topRank != null">
+          <v-chip label variant="elevated" color="primary">{{ this.jarmHashResult.alexa.topRank }}th Rank</v-chip>
+          <b class="pa-2" size="large"> {{ this.jarmHashResult.alexa.topDomain }}</b>
+          <a
+              v-if="this.jarmHashResult.alexa.raw_result.overlapping_domains.length > 1"
+              :href="'/api/v1/alexa-overlap?jarm_hash=' + jarmHashResult.hash">
+            See {{
+              this.jarmHashResult.alexa.raw_result.overlapping_domains.length - 1
+            }} other matching domains</a>
+        </span>
+        <span v-else>
+          <v-chip label variant="elevated" color="primary">No match found</v-chip>
+        </span>
+        <v-divider
+            vertical
+            color="info"
+            :thickness="2"
+            class="ma-1 border-opacity-100"
+        ></v-divider>
         Known malicious malware family:
-        <it-tooltip content="Star the github repo to see new releases in your feed" placement="bottom">
-          <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
-            <it-tag type="black" filled>not yet implemented</it-tag>
-          </a>
-        </it-tooltip>
+        <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
+          <v-chip label size="small" class="ma-1" variant="elevated" color="info">Not yet implemented
+            <v-tooltip
+                text="Star the github repo to see new releases in your feed"
+                location="bottom" activator="parent"/>
+          </v-chip>
+        </a>
       </div>
     </div>
-  </div>
+  </v-expand-transition>
+
   <div id="footer">
-    <it-divider/>
+    <v-divider :thickness="2" class="border-opacity-100" color="info" inset/>
     <h4> Latest urls requested
-      <it-tooltip content="Star the github repo to see new releases in your feed" placement="bottom">
-        <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
-          <it-tag type="black" filled>not yet implemented</it-tag>
-        </a>
-      </it-tooltip>
+      <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
+        <v-chip label size="small" class="ma-1" variant="elevated" color="info">Not yet implemented
+          <v-tooltip
+              text="Star the github repo to see new releases in your feed"
+              location="bottom" activator="parent"/>
+        </v-chip>
+      </a>
     </h4>
-    <it-collapse>
-      <it-collapse-item v-for='index in 5' :key='index' :title="'URL ' + index">
-         JARM and it's maliciousness about URL {{ index }}
-      </it-collapse-item>
-    </it-collapse>
+    <!--    TODO use https://vuetifyjs.com/en/components/expansion-panels/-->
   </div>
+  <!--  Snackbar for notifications-->
+  <v-snackbar
+      v-model="this.notification.isDisplayed"
+      :timeout="10000"
+      variant="flat"
+      color="error"
+      :absolute="true"
+      class="ma-5 opacity-100"
+      location="top right"
+      z-index="15000"
+      multi-line
+      vertical
+  >
+    <div class="text-subtitle-1 pb-2">{{ notification.title }}</div>
+    <p>{{ notification.body }}</p>
+    <template v-slot:actions>
+      <v-btn
+          variant="text"
+          @click="notification.clear()"
+      >
+        Close
+      </v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script>
 import axios from 'axios';
 import useClipboard from 'vue-clipboard3'
 
+import {notification} from './notification';
+
 export default {
   data() {
     return {
+      inputUrl: null,
       jarmHashResult: {
         hash: null,
+        alexa: {
+          raw_result: null,
+          topRank: null,
+          topDomain: null,
+        },
       },
-      computingJarmHash: false
+      computingJarmHash: false,
+      computingAlexaRank: false,
+      notification: notification,
     }
   },
   methods: {
-    onSubmit(evt) {
+    async onSubmit(evt) {
       evt.preventDefault();
-      this.computingJarmHash = true;
+      // Force reset
       this.jarmHashResult.hash = null;
-      this.lookUpUrl(this.inputUrl)
+      this.jarmHashResult.alexa.raw_result = null;
+      this.jarmHashResult.alexa.topRank = null;
+      this.jarmHashResult.alexa.topDomain = null;
+
+      this.jarmHashResult.hash = await this.lookUpUrl(this.inputUrl);
+      if (!this.jarmHashResult.hash) {
+        return;  // Skip alexa as no hash was returned
+      }
+      this.jarmHashResult.alexa.raw_result = await this.alexaOverlap(this.jarmHashResult.hash);
+      // Parse alexa result
+      this.jarmHashResult.alexa.topRank = this.jarmHashResult.alexa.raw_result.overlapping_domains[0].rank
+      this.jarmHashResult.alexa.topDomain = this.jarmHashResult.alexa.raw_result.overlapping_domains[0].domain
     },
-    lookUpUrl(url) {
+    async lookUpUrl(url) {
+      let jarm_hash = null;
+      this.computingJarmHash = true;
       const path = '/api/v1/jarm';
       const payload = {
         params: {
           host: url,
         }
       };
-      axios.get(path, payload)
-          .then((res) => {
-            if (res.data.error) {
-              this.$Notification.danger({
-                title: 'API returned an error',
-                text: res.data.error.error_type,
-              })
-            } else {
-              this.jarmHashResult.hash = res.data.jarm_hash;
-            }
-            this.computingJarmHash = false;
-          })
-          .catch((error) => {
-            this.$Notification.danger({
-              title: 'Failed to query the API',
-              text: error,
-            })
-            this.computingJarmHash = false;
-          });
+      try {
+        const res = await axios.get(path, payload);
+        if (res.data.error) {
+          this.notification.display(
+              'API returned an error',
+              res.data.error.error_type,
+          );
+        } else {
+          jarm_hash = res.data.jarm_hash;
+        }
+      } catch (error) {
+        this.notification.display(
+            'Failed to query the API',
+            error,
+        );
+      }
+      this.computingJarmHash = false;
+      return jarm_hash;
+    },
+    async alexaOverlap(hash) {
+      this.computingAlexaRank = true;
+      const path = '/api/v1/alexa-overlap';
+      const payload = {
+        params: {
+          jarm_hash: hash,
+        }
+      };
+      let result;
+      try {
+        const res = await axios.get(path, payload);
+        result = res.data
+      } catch (error) {
+        this.notification.display(
+            'Failed to query the API',
+            error,
+        );
+      }
+      this.computingAlexaRank = false;
+      return result;
     },
     async copy() {
       try {

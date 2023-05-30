@@ -1,6 +1,10 @@
 import re
+
+import pytest
 from playwright.sync_api import Page, expect
 from fixtures import home_page  # noqa required fixture
+
+INPUT_PLACEHOLDER = "8.8.8.8 | host.com/path"
 
 
 def test_scan_address(home_page: Page):
@@ -8,17 +12,24 @@ def test_scan_address(home_page: Page):
     expected_jarm_result = "21d19d00021d21d00021d19d21d21d1a46380b04d662f0848f508dd171125d"
     expect(home_page).to_have_title(re.compile("Jarm online"))
 
-    submit_scan_address_field = home_page.get_by_placeholder("Url or IP")
+    submit_scan_address_field = home_page.get_by_placeholder(INPUT_PLACEHOLDER)
     submit_scan_address_field.fill(url_scanned)
     submit_scan_address_field.press("Enter")
 
     # check result
     result = home_page.get_by_text("Jarm hash is:")
     expect(result).to_contain_text(expected_jarm_result)
-    copy_button = home_page.get_by_role("button", name="content_copy")
+    copy_button = home_page.get_by_role("button", name="COPY")
     expect(copy_button).to_be_visible()  # clipboard button is present
 
+    # Alexa overlap is displayed
+    assert home_page.get_by_text("fake_site_1.com").is_visible()
+    assert home_page.get_by_text("11th Rank").is_visible()
+    alexa_overlap_link = home_page.get_by_role("link", name="1 other matching domains")
+    expect(alexa_overlap_link).to_have_attribute("href", f"/api/v1/alexa-overlap?jarm_hash={expected_jarm_result}")
 
+
+@pytest.mark.skip(reason="TODO implement feature and rewrite tests")
 def test_latest_urls(home_page: Page):
     latest_url_header = home_page.get_by_role("heading", name=re.compile("Latest urls .+"))
     expect(latest_url_header).to_be_visible()
@@ -38,7 +49,7 @@ def test_latest_urls(home_page: Page):
 def test_scan_error_on_invalid_tld(home_page: Page):
     url_scanned = "https://test.invalid_tld"
 
-    submit_scan_address_field = home_page.get_by_placeholder("Url or IP")
+    submit_scan_address_field = home_page.get_by_placeholder(INPUT_PLACEHOLDER)
     submit_scan_address_field.fill(url_scanned)
     submit_scan_address_field.press("Enter")
 

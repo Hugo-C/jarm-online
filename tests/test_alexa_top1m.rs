@@ -8,12 +8,14 @@ mod test_alexa_top1m {
     use jarm_online::alexa_top1m::{AlexaTop1M, RankedDomain};
     use crate::common::alexa_top1m_path;
 
+    const NB_DISTINCT_HASH: usize = 9;
+
     #[rstest]
     fn build_alexa_top1m_struct_zero_hash(alexa_top1m_path: &Path) {
         let top1m = AlexaTop1M::new(alexa_top1m_path).expect("built successfully");
 
         assert!(!top1m.is_empty());
-        assert_eq!(top1m.len(), 8);
+        assert_eq!(top1m.len(), NB_DISTINCT_HASH);
         let hash = "123";
         let domains = top1m.get(hash);
         assert_eq!(domains, None);
@@ -23,7 +25,7 @@ mod test_alexa_top1m {
     fn build_alexa_top1m_struct_single_hash(alexa_top1m_path: &Path) {
         let top1m = AlexaTop1M::new(alexa_top1m_path).expect("built successfully");
 
-        assert_eq!(top1m.len(), 8);
+        assert_eq!(top1m.len(), NB_DISTINCT_HASH);
         let hash = "3fd3fd20d3fd3fd21c3fd3fd3fd3fd2b66a312d81ed1efa0f55830f7490cb2";
         let domains = top1m.get(hash).unwrap();
         assert_eq!(domains, &vec![RankedDomain {
@@ -36,7 +38,7 @@ mod test_alexa_top1m {
     fn build_alexa_top1m_struct_multiple_hash(alexa_top1m_path: &Path) {
         let top1m = AlexaTop1M::new(alexa_top1m_path).expect("built successfully");
 
-        assert_eq!(top1m.len(), 8);
+        assert_eq!(top1m.len(), NB_DISTINCT_HASH);
         let hash = "29d3fd00029d29d21c42d43d00041d188e8965256b2536432a9bd447ae607f";
         let domains = top1m.get(hash).unwrap();
         assert_eq!(domains, &vec![  // list is ordered with top rank first
