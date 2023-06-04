@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build GUI image
-        run: docker build jarm_online_gui/ -t jarm_online_gui
+        run: docker build jarm_online_gui/ --build-arg VUE_APP_SENTRY_DSN=${VUE_APP_SENTRY_DSN} -t jarm_online_gui
       - name: Build API image
         run: docker build . -t jarm_online_api
       - name: Login to Docker Hub
