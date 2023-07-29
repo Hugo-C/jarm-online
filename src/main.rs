@@ -1,7 +1,6 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
-mod rocket_sentry;
-
+use ::rocket_sentry::RocketSentry;
 use jarm_online::set_up_rocket;
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::Header;
@@ -28,6 +27,6 @@ impl Fairing for CORS {
 fn main() {
     set_up_rocket()
         .attach(CORS)
-        .attach(rocket_sentry::RocketSentry::fairing())
+        .attach(RocketSentry::fairing())
         .launch();
 }
