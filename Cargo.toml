@@ -14,6 +14,7 @@ regex = "1.7"
 csv = "1.2"
 openssl = { version = "0.10", features = ["vendored"] }  # Required for sentry
 sentry = "0.31"
+rocket-sentry = "0.7"  # 0.8 require rocket 0.5
 
 [dependencies.rocket_contrib]
 version = "0.4"
