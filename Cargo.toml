@@ -12,8 +12,8 @@ serde = { version = "1.0", features = ["derive"] }
 lazy_static = "1.4"
 regex = "1.7"
 csv = "1.2"
-# Required to exclude openssl dependency
-sentry = { version= "0.20.1", default-features = false, features = ["with_reqwest_transport", "with_rustls", "backtrace", "contexts", "failure", "panic"] }
+openssl = { version = "0.10", features = ["vendored"] }  # Required for sentry
+sentry = "0.31"
 
 [dependencies.rocket_contrib]
 version = "0.4"

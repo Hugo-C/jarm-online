@@ -4,7 +4,8 @@ use std::sync::Mutex;
 
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::Rocket;
-use sentry::ClientInitGuard;
+use sentry::{ClientInitGuard, release_name};
+
 
 pub struct RocketSentry {
     guard: Mutex<Option<ClientInitGuard>>,
@@ -18,7 +19,11 @@ impl RocketSentry {
     }
 
     fn init(&self, dsn: &str) {
-        let guard = sentry::init(dsn);
+        let guard = sentry::init((dsn, sentry::ClientOptions {
+            release: release_name!(),
+            traces_sample_rate: 1.0,
+            ..Default::default()
+        }));
         if guard.is_enabled() {
             // Tuck the ClientInitGuard in the fairing, so it lives as long as the server.
             let mut self_guard = self.guard.lock().unwrap();
