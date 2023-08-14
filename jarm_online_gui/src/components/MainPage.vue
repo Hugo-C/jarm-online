@@ -98,7 +98,7 @@
     <h5 id="footernote">
       hosted with 💙 on <v-img id="gcpimg" src="gcp.png" height="20" width="20" inline="true"></v-img>
       <v-text class="ma-5"> | </v-text>
-      <a id="statuspage" href="https://jarm.statuspage.io/" target="_blank" rel="noopener noreferrer">
+      <a href="https://jarm.statuspage.io/" target="_blank" rel="noopener noreferrer">
         status page
       </a>
     </h5>
@@ -243,16 +243,8 @@ export default {
   font-size: 125%;
 }
 
-#copyButton {
-  margin: 3px
-}
-
 #disclaimerLine {
   margin-top: 3px;
-}
-
-#disclaimerTag {
-  font-size: 100%;
 }
 
 #darkRibbon:before {
@@ -260,10 +252,6 @@ export default {
 }
 
 #footernote {
-  color: dimgray;
-}
-
-#statuspage {
   color: dimgray;
 }
 
