@@ -7,7 +7,9 @@ The GUI is made with Vue.js with the future goal to store previously computed ha
 
 # Live version: [jarm.online](https://jarm.online/)  
 [![Website](https://img.shields.io/website?down_color=lightgrey&style=for-the-badge&up_color=brightgreen&up_message=online&url=https%3A%2F%2Fjarm.online%2F)](https://jarm.online/)  
-[![Docker publish](https://github.com/Hugo-C/jarm-online/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/Hugo-C/jarm-online/actions/workflows/docker-publish.yml)
+[![Docker publish](https://github.com/Hugo-C/jarm-online/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/Hugo-C/jarm-online/actions/workflows/docker-publish.yml)  
+[![dependency status](https://deps.rs/repo/github/Hugo-C/jarm-online/status.svg)](https://deps.rs/repo/github/Hugo-C/jarm-online)
+
 </div>
 
 ## Setup

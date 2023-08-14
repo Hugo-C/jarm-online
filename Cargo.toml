@@ -12,7 +12,7 @@ serde = { version = "1.0", features = ["derive"] }
 lazy_static = "1.4"
 regex = "1.7"
 csv = "1.2"
-openssl = { version = "0.10", features = ["vendored"] }  # Required for sentry
+openssl = { version = "~0.10.55", features = ["vendored"] }  # Required for sentry
 sentry = "0.31"
 rocket-sentry = "0.7"  # 0.8 require rocket 0.5
 
@@ -22,4 +22,4 @@ default-features = false
 features = ["json"]
 
 [dev-dependencies]
-rstest = "0.17"
+rstest = "0.18"
