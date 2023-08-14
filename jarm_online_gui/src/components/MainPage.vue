@@ -95,6 +95,13 @@
       </a>
     </h4>
     <!--    TODO use https://vuetifyjs.com/en/components/expansion-panels/-->
+    <h5 id="footernote">
+      hosted with 💙 on <v-img id="gcpimg" src="gcp.png" height="20" width="20" inline="true"></v-img>
+      <v-text class="ma-5"> | </v-text>
+      <a id="statuspage" href="https://jarm.statuspage.io/" target="_blank" rel="noopener noreferrer">
+        status page
+      </a>
+    </h5>
   </div>
   <!--  Snackbar for notifications-->
   <v-snackbar
@@ -250,6 +257,18 @@ export default {
 
 #darkRibbon:before {
   background-color: #333;
+}
+
+#footernote {
+  color: dimgray;
+}
+
+#statuspage {
+  color: dimgray;
+}
+
+#gcpimg {
+  vertical-align: -20%;
 }
 
 #footer {
