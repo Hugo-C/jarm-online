@@ -15,7 +15,7 @@ app.directive('autofocus', {
 
 // Set at build time through env var
 // see https://cli.vuejs.org/guide/mode-and-env.html#using-env-variables-in-client-side-code
-let sentry_dsn = process.env.VUE_APP_SENTRY_DSN
+let sentry_dsn = import.meta.env.VUE_APP_SENTRY_DSN
 Sentry.init({
     app,
     dsn: sentry_dsn,
