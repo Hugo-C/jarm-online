@@ -45,14 +45,16 @@
           </v-btn>
         </v-card>
       </div>
-      <div>
-        Alexa top 1 Million overlap:
-        <v-progress-circular
-            v-if="computingAlexaRank"
-            indeterminate
-            color="secondary"
-        ></v-progress-circular>
-        <span v-else-if="this.jarmHashResult.alexa.topRank != null">
+      <v-container fill-height class="w-75">
+        <v-row align="center" justify="center">
+          <div>
+            Alexa top 1 Million overlap:
+            <v-progress-circular
+                v-if="computingAlexaRank"
+                indeterminate
+                color="secondary"
+            ></v-progress-circular>
+            <span v-else-if="this.jarmHashResult.alexa.topRank != null">
           <v-chip label variant="elevated" color="primary">{{ this.jarmHashResult.alexa.topRank }}th Rank</v-chip>
           <b class="pa-2" size="large"> {{ this.jarmHashResult.alexa.topDomain }}</b>
           <a
@@ -65,21 +67,44 @@
         <span v-else>
           <v-chip label variant="elevated" color="primary">No match found</v-chip>
         </span>
-        <v-divider
-            vertical
-            color="info"
-            :thickness="2"
-            class="ma-1 border-opacity-100"
-        ></v-divider>
-        Known malicious malware family:
-        <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
-          <v-chip label size="small" class="ma-1" variant="elevated" color="info">Not yet implemented
-            <v-tooltip
-                text="Star the github repo to see new releases in your feed"
-                location="bottom" activator="parent"/>
-          </v-chip>
-        </a>
-      </div>
+            <v-divider
+                vertical
+                color="info"
+                :thickness="2"
+                class="ma-1 border-opacity-100"
+            ></v-divider>
+            Known malicious malware family:
+            <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
+              <v-chip label size="small" class="ma-1" variant="elevated" color="info">Not yet implemented
+                <v-tooltip
+                    text="Star the github repo to see new releases in your feed"
+                    location="bottom" activator="parent"/>
+              </v-chip>
+            </a>
+          </div>
+          <v-expansion-panels class="pa-2">
+            <v-expansion-panel>
+              <v-expansion-panel-title id="shodanPanel">
+                Shodan
+              </v-expansion-panel-title>
+              <v-expansion-panel-text>
+                <a :href="shodanSearchLink" target="_blank" rel="noopener noreferrer">
+                  <v-img :src="shodanImageLink" lazy-src="/shodan_placeholder.png" height="480">
+                    <template v-slot:placeholder>
+                      <div class="d-flex align-center justify-center fill-height">
+                        <v-progress-circular
+                            color="grey-lighten-4"
+                            indeterminate
+                        ></v-progress-circular>
+                      </div>
+                    </template>
+                  </v-img>
+                </a>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </v-row>
+      </v-container>
     </div>
   </v-expand-transition>
 
@@ -94,7 +119,15 @@
         </v-chip>
       </a>
     </h4>
-    <!--    TODO use https://vuetifyjs.com/en/components/expansion-panels/-->
+    <!--    TODO use https://vuetifyjs.com/en/components/expansion-panels/ -->
+    <h5 id="footernote">
+      hosted with 💙 on
+      <v-img id="gcpimg" src="gcp.png" height="20" width="20" inline="true"></v-img>
+      <v-text class="ma-5"> |</v-text>
+      <a href="https://jarm.statuspage.io/" target="_blank" rel="noopener noreferrer">
+        status page
+      </a>
+    </h5>
   </div>
   <!--  Snackbar for notifications-->
   <v-snackbar
@@ -143,19 +176,34 @@ export default {
       computingJarmHash: false,
       computingAlexaRank: false,
       notification: notification,
+      shodanImageLink: null,
+      shodanSearchLink: null,
     }
   },
   methods: {
-    async onSubmit(evt) {
-      evt.preventDefault();
-      // Force reset
+    resetJarmHash() {
       this.jarmHashResult.hash = null;
       this.jarmHashResult.alexa.raw_result = null;
       this.jarmHashResult.alexa.topRank = null;
       this.jarmHashResult.alexa.topDomain = null;
+      this.shodanImageLink = null;
+      this.shodanSearchLink = null;
+    },
+    setJarmHash(hash) {
+      this.jarmHashResult.hash = hash;
+      if (!hash) {
+        return;
+      }
+      this.shodanImageLink = `https://www.shodan.io/search/facet.png?query=ssl.jarm%3A${hash}&facet=product`;
+      this.shodanSearchLink = `https://www.shodan.io/search?query=ssl.jarm:${hash}`;
+    },
+    async onSubmit(evt) {
+      evt.preventDefault();
+      this.resetJarmHash();
 
-      this.jarmHashResult.hash = await this.lookUpUrl(this.inputUrl);
-      if (!this.jarmHashResult.hash) {
+      let hash = await this.lookUpUrl(this.inputUrl);
+      this.setJarmHash(hash);
+      if (!hash) {
         return;  // Skip alexa as no hash was returned
       }
       this.jarmHashResult.alexa.raw_result = await this.alexaOverlap(this.jarmHashResult.hash);
@@ -236,20 +284,24 @@ export default {
   font-size: 125%;
 }
 
-#copyButton {
-  margin: 3px
+#shodanPanel {
+  display: flex;
 }
 
 #disclaimerLine {
   margin-top: 3px;
 }
 
-#disclaimerTag {
-  font-size: 100%;
-}
-
 #darkRibbon:before {
   background-color: #333;
+}
+
+#footernote {
+  color: dimgray;
+}
+
+#gcpimg {
+  vertical-align: -20%;
 }
 
 #footer {
