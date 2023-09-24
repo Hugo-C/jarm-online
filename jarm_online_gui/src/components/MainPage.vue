@@ -64,7 +64,7 @@
               this.jarmHashResult.alexa.raw_result.overlapping_domains.length - 1
             }} other matching domains</a>
         </span>
-        <span v-else>
+            <span v-else>
           <v-chip label variant="elevated" color="primary">No match found</v-chip>
         </span>
             <v-divider
@@ -86,6 +86,13 @@
             <v-expansion-panel>
               <v-expansion-panel-title id="shodanPanel">
                 Shodan
+<!-- TODO add a result count like https://api.shodan.io/shodan/host/count?query=ssl.jarm:29d29d00029d29d00042d42d00000000f78d2dc0ce6e5bbc5b8149a4872356 -->
+<!--                <div v-if="computingShodanResultCount" class="w-50">-->
+<!--                  <v-progress-linear indeterminate color="primary" :absolute="true"></v-progress-linear>-->
+<!--                </div>-->
+<!--                <span v-else class="shodanResultCount ">-->
+<!--                    <v-chip label variant="elevated" class="mr-5" color="primary">70</v-chip>-->
+<!--                </span>-->
               </v-expansion-panel-title>
               <v-expansion-panel-text>
                 <a :href="shodanSearchLink" target="_blank" rel="noopener noreferrer">
@@ -286,6 +293,13 @@ export default {
 
 #shodanPanel {
   display: flex;
+}
+
+.shodanResultCount {
+  flex: 1;
+  text-align: right;
+  align-content: flex-end;
+  white-space: nowrap;
 }
 
 #disclaimerLine {
