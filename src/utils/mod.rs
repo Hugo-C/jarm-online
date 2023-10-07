@@ -2,7 +2,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 fn extract_host(url: String) -> String {
-    const URL_REGEX: &str = r#"^http[s]?://(?P<host>[^:/\s]+)(((/\w+)*/))?(.*)$"#;
+    const URL_REGEX: &str = r"^http[s]?://(?P<host>[^:/\s]+)(((/\w+)*/))?(.*)$";
 
     lazy_static! {
         static ref RE: Regex = Regex::new(URL_REGEX).unwrap();

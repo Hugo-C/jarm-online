@@ -1,19 +1,12 @@
-[development]
-address = "localhost"
-port = 8000
-workers = 2
-keep_alive = 5
-read_timeout = 5
-write_timeout = 5
-log = "normal"
-limits = { forms = 32768 }
-
-[production]
+[debug]
 address = "127.0.0.1"
 port = 8000
 workers = 2
-keep_alive = 5
-read_timeout = 5
-write_timeout = 5
-log = "normal"
+log_level = "normal"
+limits = { forms = 32768 }
+
+[release]
+address = "127.0.0.1"
+port = 8000
+log_level = "normal"
 limits = { forms = 32768 }

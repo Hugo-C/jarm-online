@@ -1,8 +1,8 @@
 use std::env;
 use std::path::Path;
 use rstest::*;
-use jarm_online::set_up_rocket;
-use rocket::local::Client;
+use jarm_online::build_rocket;
+use rocket::local::blocking::Client;
 
 #[fixture]
 #[once]
@@ -20,6 +20,6 @@ pub fn set_env_var_alexa_top1m_path(alexa_top1m_path: &'static Path) -> &'static
 #[fixture]
 #[allow(unused_variables)]
 pub fn rocket_client(set_env_var_alexa_top1m_path: &'static Path) -> Client {
-    let test_rocket = set_up_rocket();
-    Client::new(test_rocket).expect("valid rocket instance")
+    let test_rocket = build_rocket();
+    Client::tracked(test_rocket).expect("valid rocket instance")
 }
