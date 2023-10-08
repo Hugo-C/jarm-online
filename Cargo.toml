@@ -1,25 +1,21 @@
 [package]
 name = "jarm_online"
-version = "0.2.0"
+version = "0.2.2"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rocket = "0.4"
+rocket = { version = "=0.5.0-rc.3", features = ["json"] }
 rust_jarm = "0.3"
 serde = { version = "1.0", features = ["derive"] }
 lazy_static = "1.4"
 regex = "1.7"
-csv = "1.2"
+csv = "1.3"
 openssl = { version = "~0.10.55", features = ["vendored"] }  # Required for sentry
 sentry = "0.31"
-rocket-sentry = "0.7"  # 0.8 require rocket 0.5
+rocket-sentry = { git = "https://github.com/Hugo-C/rocket-sentry", branch = "master" }
 
-[dependencies.rocket_contrib]
-version = "0.4"
-default-features = false
-features = ["json"]
 
 [dev-dependencies]
 rstest = "0.18"

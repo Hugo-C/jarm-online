@@ -1,4 +1,4 @@
-FROM rust:1.72 as build-stage
+FROM rust:1.73 as build-stage
 
 ARG BUILD_TARGET="x86_64-unknown-linux-musl"
 ARG BUILD_OPTIONS="--release  --target $BUILD_TARGET"

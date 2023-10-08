@@ -1,5 +1,3 @@
-#![feature(proc_macro_hygiene, decl_macro)]
-
 #[macro_use]
 extern crate rocket;
 
@@ -10,8 +8,8 @@ use crate::alexa_top1m::{AlexaTop1M, RankedDomain};
 
 use std::env;
 use std::path::Path;
-use rocket::{Rocket, State};
-use rocket_contrib::json::Json;
+use rocket::{Build, Rocket, State};
+use rocket::serde::json::Json;
 use rust_jarm::Jarm;
 use serde::Serialize;
 use std::time::Duration;
@@ -70,7 +68,7 @@ fn jarm(host: String, port: Option<String>) -> Json<JarmResponse> {
 }
 
 #[get("/?<jarm_hash>")]
-fn alexa_overlap(alexa_top1m: State<AlexaTop1M>, jarm_hash: String) -> Json<AlexaOverlapResponse> {  // TODO try str
+fn alexa_overlap(alexa_top1m: &State<AlexaTop1M>, jarm_hash: String) -> Json<AlexaOverlapResponse> {  // TODO try str
     let overlap = match alexa_top1m.get(jarm_hash.as_str()) {
         None => vec![],
         Some(overlap) => overlap.to_vec()
@@ -99,10 +97,10 @@ fn build_error_json(jarm_error: JarmError) -> Json<JarmResponse> {
     })
 }
 
-pub fn set_up_rocket() -> Rocket {
+pub fn build_rocket() -> Rocket<Build> {
     let alexa_top1m = AlexaTop1M::new(&alexa_top1m_raw_data_path())
         .expect("AlexaTop1M built correctly");
-    rocket::ignite()
+    rocket::build()
         .mount("/jarm", routes![jarm])
         .mount("/alexa-overlap", routes![alexa_overlap])
         .manage(alexa_top1m)
