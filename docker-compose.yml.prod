@@ -22,4 +22,5 @@ services:
     environment:
       - ROCKET_PROFILE=release
       - ROCKET_SENTRY_DSN=${ROCKET_SENTRY_DSN}
+      - ROCKET_SENTRY_TRANSACTION_SAMPLE_RATE=1.0
     restart: unless-stopped
