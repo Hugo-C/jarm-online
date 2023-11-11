@@ -21,7 +21,6 @@
         <v-progress-linear
             :active="computingJarmHash"
             color="secondary"
-            absolute
             rounded
             height="5"
             indeterminate
