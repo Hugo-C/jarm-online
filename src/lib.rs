@@ -4,6 +4,7 @@ extern crate rocket;
 pub mod utils;
 pub mod alexa_top1m;
 
+use rocket_db_pools::{Connection, deadpool_redis};
 use crate::alexa_top1m::{AlexaTop1M, RankedDomain};
 
 use std::env;
@@ -14,8 +15,14 @@ use rust_jarm::Jarm;
 use serde::Serialize;
 use std::time::Duration;
 use rust_jarm::error::JarmError;
+use rocket_db_pools::{Database};
+use rocket_db_pools::deadpool_redis::redis::{AsyncCommands};
 
 pub const DEFAULT_SCAN_TIMEOUT_IN_SECONDS: u64 = 15;
+
+#[derive(Database)]
+#[database("redis_db")]
+struct Db(deadpool_redis::Pool);
 
 #[derive(Serialize)]
 struct ErrorResponse {
@@ -76,6 +83,13 @@ fn alexa_overlap(alexa_top1m: &State<AlexaTop1M>, jarm_hash: String) -> Json<Ale
     Json(AlexaOverlapResponse { overlapping_domains: overlap })
 }
 
+#[get("/")]
+async fn redis_test(mut db: Connection<Db>) -> String {
+    let _ : () = db.set("key", "value").await.unwrap();
+    let result: String = db.get("key").await.unwrap();
+    format!("Redis ok: {result}")
+}
+
 fn build_error_json(jarm_error: JarmError) -> Json<JarmResponse> {
     // error_message is a debug view of a an unknown error, to be improved.
     let (error_type, error_message) = match jarm_error {
@@ -103,5 +117,7 @@ pub fn build_rocket() -> Rocket<Build> {
     rocket::build()
         .mount("/jarm", routes![jarm])
         .mount("/alexa-overlap", routes![alexa_overlap])
+        .mount("/test", routes![redis_test])
+        .attach(Db::init())
         .manage(alexa_top1m)
 }
