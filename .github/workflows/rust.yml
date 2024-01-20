@@ -20,6 +20,11 @@ jobs:
       run: cargo build
     - name: Run tests
       run: cargo test --verbose
+    - name: Run integration tests
+      run: |
+        docker compose -f docker-compose.integration.yml up -d redis playwright_dummy_server
+        cargo test -- --ignored
+        docker compose -f docker-compose.integration.yml down
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: nightly

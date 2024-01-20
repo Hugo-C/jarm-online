@@ -1,3 +1,8 @@
+run_integration_tests:
+	docker compose -f docker-compose.integration.yml up -d redis playwright_dummy_server
+	cargo test -- --include-ignored
+	docker compose -f docker-compose.integration.yml down
+
 run_e2e_tests:
 	docker compose -f docker-compose.playwright.yml build jarm_online_gui
 	docker compose -f docker-compose.playwright.yml build jarm_online_api
