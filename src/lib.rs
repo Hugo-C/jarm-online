@@ -14,6 +14,7 @@ use rocket::serde::json::Json;
 use rust_jarm::Jarm;
 use serde::Serialize;
 use std::time::Duration;
+use rocket::form::validate::Contains;
 use rocket::serde::Deserialize;
 use rocket::serde::json::serde_json;
 use rust_jarm::error::JarmError;
@@ -90,11 +91,15 @@ async fn jarm(host: String, port: Option<String>, mut redis_client: Connection<D
         }
     };
 
-
+    // We save jarm results only if valid
     let scan = LastScanResponse { host: _host, port: _port, jarm_hash };
     let serialized_scan = serde_json::to_string(&scan).unwrap();
-    // We save jarm results only if valid
-    let _: () = redis_client.lpush(REDIS_LAST_SCAN_LIST_KEY, serialized_scan).await.unwrap();
+    // Check if the scan is already registered
+    let redis_last_scans: Vec<String> = redis_client.lrange(REDIS_LAST_SCAN_LIST_KEY, 0, -1).await.unwrap();
+    if !redis_last_scans.contains(&serialized_scan) {
+        let _: () = redis_client.lpush(REDIS_LAST_SCAN_LIST_KEY, serialized_scan).await.unwrap();
+    }
+
     Json(JarmResponse { host: scan.host, port: scan.port, jarm_hash: scan.jarm_hash, error: None })
 }
 

@@ -39,4 +39,22 @@ mod test_route_last_scans {
 
         assert_eq!(response.into_json::<Value>().unwrap(), expected_response);
     }
+
+    #[rstest]
+    #[ignore = "Integration tests"]
+    fn duplicates_are_not_returned(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
+        let expected_response = json!({
+            "last_scans": [{
+                "host": "localhost",
+                "port": "443",
+                "jarm_hash": DUMMY_SERVER_JARM_HASH,
+            }],
+        });
+        rocket_client.get("/jarm?host=localhost").dispatch();
+        rocket_client.get("/jarm?host=localhost").dispatch();
+
+        let response = rocket_client.get("/last-scans").dispatch();
+
+        assert_eq!(response.into_json::<Value>().unwrap(), expected_response);
+    }
 }
