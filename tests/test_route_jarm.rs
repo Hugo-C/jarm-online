@@ -3,17 +3,17 @@ mod common;
 
 #[cfg(test)]
 mod test_route_jarm {
+    use std::sync::MutexGuard;
     use rstest::*;
     use rocket::local::blocking::Client;
     use rocket::serde::json::serde_json::json;
     use rocket::serde::json::Value;
-    use crate::common::rocket_client;
-
-    const DUMMY_SERVER_JARM_HASH: &str = "21d19d00021d21d00021d19d21d21d1a46380b04d662f0848f508dd171125d";
+    use crate::common::{clean_redis, rocket_client};
+    use crate::common::DUMMY_SERVER_JARM_HASH;
 
     #[rstest]
     #[ignore = "Integration tests"]
-    fn host_as_ip_only(rocket_client: Client) {
+    fn host_as_ip_only(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
         let expected_response = json!({
             "host": "127.0.0.1",
             "port": "443",
@@ -28,7 +28,7 @@ mod test_route_jarm {
 
     #[rstest]
     #[ignore = "Integration tests"]
-    fn host_as_domain_only(rocket_client: Client) {
+    fn host_as_domain_only(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
         let expected_response = json!({
             "host": "localhost",
             "port": "443",
@@ -43,7 +43,7 @@ mod test_route_jarm {
 
     #[rstest]
     #[ignore = "Integration tests"]
-    fn host_as_url_only(rocket_client: Client) {
+    fn host_as_url_only(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
         let expected_response = json!({
             "host": "localhost",
             "port": "443",
@@ -58,7 +58,7 @@ mod test_route_jarm {
 
     #[rstest]
     #[ignore = "Integration tests"]
-    fn host_with_port(rocket_client: Client) {
+    fn host_with_port(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
         let expected_response = json!({
             "host": "localhost",
             "port": "443",

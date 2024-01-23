@@ -14,11 +14,14 @@ use rocket::serde::json::Json;
 use rust_jarm::Jarm;
 use serde::Serialize;
 use std::time::Duration;
+use rocket::serde::Deserialize;
+use rocket::serde::json::serde_json;
 use rust_jarm::error::JarmError;
 use rocket_db_pools::{Database};
 use rocket_db_pools::deadpool_redis::redis::{AsyncCommands};
 
 pub const DEFAULT_SCAN_TIMEOUT_IN_SECONDS: u64 = 15;
+pub const REDIS_LAST_SCAN_LIST_KEY: &str = "redis_last_scan_list_key";
 
 #[derive(Database)]
 #[database("redis_db")]
@@ -26,6 +29,7 @@ struct Db(deadpool_redis::Pool);
 
 #[derive(Serialize)]
 struct ErrorResponse {
+    // TODO rename in JarmErrorResponse
     error_type: String,
     error_message: String,
 }
@@ -36,6 +40,18 @@ struct JarmResponse {
     port: String,
     jarm_hash: String,
     error: Option<ErrorResponse>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct LastScanResponse {
+    host: String,
+    port: String,
+    jarm_hash: String,
+}  // TODO timestamp ?
+
+#[derive(Serialize)]
+struct LastScanListResponse {
+    last_scans: Vec<LastScanResponse>,
 }
 
 #[derive(Serialize)]
@@ -57,21 +73,39 @@ pub fn alexa_top1m_raw_data_path() -> Box<Path> {
 }
 
 #[get("/?<host>&<port>")]
-fn jarm(host: String, port: Option<String>) -> Json<JarmResponse> {
+async fn jarm(host: String, port: Option<String>, mut redis_client: Connection<Db>) -> Json<JarmResponse> {
     let _port = port.unwrap_or_else(|| "443".to_string());
     let _host = utils::sanitize_host(&host);
-    let mut jarm_scan = Jarm::new(
-        _host.clone(),
-        _port.clone(),
-    );
-    jarm_scan.timeout = Duration::from_secs(scan_timeout_in_seconds());
-    let jarm_hash = match jarm_scan.hash() {
-        Ok(hash) => hash,
-        Err(jarm_error) => {
-            return build_error_json(jarm_error);
+    let jarm_hash = {
+        let mut jarm_scan = Jarm::new(
+            _host.clone(),
+            _port.clone(),
+        );
+        jarm_scan.timeout = Duration::from_secs(scan_timeout_in_seconds());
+        match jarm_scan.hash() {
+            Ok(hash) => hash,
+            Err(jarm_error) => {
+                return build_error_json(jarm_error);
+            }
         }
     };
-    Json(JarmResponse { host: _host, port: _port, jarm_hash, error: None })
+
+
+    let scan = LastScanResponse { host: _host, port: _port, jarm_hash };
+    let serialized_scan = serde_json::to_string(&scan).unwrap();
+    // We save jarm results only if valid
+    let _: () = redis_client.lpush(REDIS_LAST_SCAN_LIST_KEY, serialized_scan).await.unwrap();
+    Json(JarmResponse { host: scan.host, port: scan.port, jarm_hash: scan.jarm_hash, error: None })
+}
+
+#[get("/")]
+async fn last_scans(mut redis_client: Connection<Db>) -> Json<LastScanListResponse> {
+    let redis_last_scans: Vec<String> = redis_client.lrange(REDIS_LAST_SCAN_LIST_KEY, -10, -1).await.unwrap();
+    let mut last_scans = vec![];
+    for scan in redis_last_scans {
+        last_scans.push(serde_json::from_str(&scan).unwrap());
+    }
+    Json(LastScanListResponse { last_scans })
 }
 
 #[get("/?<jarm_hash>")]
@@ -81,13 +115,6 @@ fn alexa_overlap(alexa_top1m: &State<AlexaTop1M>, jarm_hash: String) -> Json<Ale
         Some(overlap) => overlap.to_vec()
     };
     Json(AlexaOverlapResponse { overlapping_domains: overlap })
-}
-
-#[get("/")]
-async fn redis_test(mut db: Connection<Db>) -> String {
-    let _ : () = db.set("key", "value").await.unwrap();
-    let result: String = db.get("key").await.unwrap();
-    format!("Redis ok: {result}")
 }
 
 fn build_error_json(jarm_error: JarmError) -> Json<JarmResponse> {
@@ -116,8 +143,8 @@ pub fn build_rocket() -> Rocket<Build> {
         .expect("AlexaTop1M built correctly");
     rocket::build()
         .mount("/jarm", routes![jarm])
+        .mount("/last-scans", routes![last_scans])
         .mount("/alexa-overlap", routes![alexa_overlap])
-        .mount("/test", routes![redis_test])
         .attach(Db::init())
         .manage(alexa_top1m)
 }
