@@ -24,6 +24,8 @@ use rocket_db_pools::deadpool_redis::redis::{AsyncCommands};
 pub const DEFAULT_SCAN_TIMEOUT_IN_SECONDS: u64 = 15;
 pub const REDIS_LAST_SCAN_LIST_KEY: &str = "redis_last_scan_list_key";
 
+pub const LAST_SCAN_SIZE_RETURNED: isize = 10;
+
 #[derive(Database)]
 #[database("redis_db")]
 struct Db(deadpool_redis::Pool);
@@ -97,7 +99,7 @@ async fn jarm(host: String, port: Option<String>, mut redis_client: Connection<D
     // Check if the scan is already registered
     let redis_last_scans: Vec<String> = redis_client.lrange(REDIS_LAST_SCAN_LIST_KEY, 0, -1).await.unwrap();
     if !redis_last_scans.contains(&serialized_scan) {
-        let _: () = redis_client.lpush(REDIS_LAST_SCAN_LIST_KEY, serialized_scan).await.unwrap();
+        let _: () = redis_client.rpush(REDIS_LAST_SCAN_LIST_KEY, serialized_scan).await.unwrap();
     }
 
     Json(JarmResponse { host: scan.host, port: scan.port, jarm_hash: scan.jarm_hash, error: None })
@@ -105,7 +107,7 @@ async fn jarm(host: String, port: Option<String>, mut redis_client: Connection<D
 
 #[get("/")]
 async fn last_scans(mut redis_client: Connection<Db>) -> Json<LastScanListResponse> {
-    let redis_last_scans: Vec<String> = redis_client.lrange(REDIS_LAST_SCAN_LIST_KEY, -10, -1).await.unwrap();
+    let redis_last_scans: Vec<String> = redis_client.lrange(REDIS_LAST_SCAN_LIST_KEY, -LAST_SCAN_SIZE_RETURNED, -1).await.unwrap();
     let mut last_scans = vec![];
     for scan in redis_last_scans {
         last_scans.push(serde_json::from_str(&scan).unwrap());

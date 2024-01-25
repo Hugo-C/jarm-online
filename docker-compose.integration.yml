@@ -10,5 +10,5 @@ services:
     container_name: playwright_dummy_server_container
     image: hugocker/nginx_tls_dummy_server:latest
     ports:
-      - "443:443"
+      - "400-443:400-443"
 
