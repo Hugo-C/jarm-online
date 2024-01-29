@@ -23,7 +23,7 @@ use rocket_db_pools::deadpool_redis::redis::{AsyncCommands};
 pub const DEFAULT_SCAN_TIMEOUT_IN_SECONDS: u64 = 15;
 pub const REDIS_LAST_SCAN_LIST_KEY: &str = "redis_last_scan_list_key";
 
-pub const LAST_SCAN_SIZE_RETURNED: usize = 10;
+pub const LAST_SCAN_SIZE_RETURNED: isize = 10;
 
 #[derive(Database)]
 #[database("redis_db")]
@@ -102,9 +102,10 @@ async fn jarm(host: String, port: Option<String>, mut redis_client: Connection<D
     let epoch = since_the_epoch.as_secs();
     let _: () = redis_client.zadd(REDIS_LAST_SCAN_LIST_KEY, serialized_scan, epoch).await.unwrap();
 
-    let last_scan_count: usize = redis_client.zcount(REDIS_LAST_SCAN_LIST_KEY, "-inf", "+inf").await.unwrap();
+    let last_scan_count: isize = redis_client.zcount(REDIS_LAST_SCAN_LIST_KEY, "-inf", "+inf").await.unwrap();
     if last_scan_count > LAST_SCAN_SIZE_RETURNED {  // pop the results above the defined limit
-        let _: () = redis_client.zremrangebyrank(REDIS_LAST_SCAN_LIST_KEY, 0, 0).await.unwrap();
+        let pop_number = last_scan_count - LAST_SCAN_SIZE_RETURNED - 1;  // end range is inclusive
+        let _: () = redis_client.zremrangebyrank(REDIS_LAST_SCAN_LIST_KEY, 0, pop_number).await.unwrap();
     }
     Json(JarmResponse { host: scan.host, port: scan.port, jarm_hash: scan.jarm_hash, error: None })
 }

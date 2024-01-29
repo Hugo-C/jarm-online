@@ -90,7 +90,7 @@ mod test_route_last_scans {
         let mut last_scans = Vec::new();
 
         for port in 400..=410 {
-            if port != 400 {  // First request should no be returned
+            if port != 400 {  // First request should not be returned
                 last_scans.push(
                     json!({
                     "host": "localhost",
