@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+
+  letsencrypt:
+    image: certbot/certbot:latest
+    command: sh -c "certbot certonly --standalone -d jarm.online --text --agree-tos --email contact@jarm.online --server https://acme-v02.api.letsencrypt.org/directory --rsa-key-size 4096 --verbose --keep-until-expiring --preferred-challenges=http && chown -R 1001:1001 /etc/letsencrypt/ && chmod -R 755 /etc/letsencrypt/"
+    entrypoint: ""
+    volumes:
+      - "letsencrypt:/etc/letsencrypt"
+    environment:
+      - TERM=xterm
+# For the first generation, see https://stackoverflow.com/a/66638930
+#    ports:
+#      - "80:80"
+# Else, run in a cron: docker-compose -f docker-compose-LE.yml run --rm letsencrypt
+
+volumes:
+  letsencrypt:
+    name: letsencrypt_keys
