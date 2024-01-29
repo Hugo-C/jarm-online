@@ -104,8 +104,8 @@ async fn jarm(host: String, port: Option<String>, mut redis_client: Connection<D
 
     let last_scan_count: isize = redis_client.zcount(REDIS_LAST_SCAN_LIST_KEY, "-inf", "+inf").await.unwrap();
     if last_scan_count > LAST_SCAN_SIZE_RETURNED {  // pop the results above the defined limit
-        let pop_number = last_scan_count - LAST_SCAN_SIZE_RETURNED - 1;  // end range is inclusive
-        let _: () = redis_client.zremrangebyrank(REDIS_LAST_SCAN_LIST_KEY, 0, pop_number).await.unwrap();
+        let pop_number = last_scan_count - LAST_SCAN_SIZE_RETURNED;
+        let _: () = redis_client.zpopmin(REDIS_LAST_SCAN_LIST_KEY, pop_number).await.unwrap();
     }
     Json(JarmResponse { host: scan.host, port: scan.port, jarm_hash: scan.jarm_hash, error: None })
 }
