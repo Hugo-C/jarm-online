@@ -21,6 +21,8 @@ services:
       - ROCKET_SENTRY_DSN=${ROCKET_SENTRY_DSN:-https://123@deactivated.io/123}
     ports:
       - "8000:8000"
+    depends_on:
+      - redis
 
   redis:
     image: redis:7-alpine

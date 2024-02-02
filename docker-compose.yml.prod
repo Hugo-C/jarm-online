@@ -27,6 +27,8 @@ services:
     volumes:
       - ./data/result_aggregated.csv:/alexa_top1M.csv
     restart: unless-stopped
+    depends_on:
+      - redis
 
   redis:
     image: redis:7-alpine
