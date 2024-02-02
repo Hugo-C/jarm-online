@@ -48,6 +48,14 @@ GET api/v1/alexa-overlap?jarm_hash=<jarm-hash>
 
 The returned list is ordered by top alexa rank first
 
+### Retrieve recently scanned hosts
+
+````http request
+GET api/v1/last-scans
+````
+
+The returned list is ordered by oldest scans first. No pagination is proposed.
+
 ## Images statistics
 
 |                                image                                 |                                                                                                                                                        RAM usage                                                                                                                                                        |                                                                             image size (compressed)                                                                              |
