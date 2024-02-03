@@ -18,6 +18,7 @@ services:
     container_name: jarm_online_api_container
     environment:
       - ROCKET_PROFILE=release
+      - ROCKET_DATABASES={redis_db={url="redis://redis"}}
       - ROCKET_SENTRY_DSN=${ROCKET_SENTRY_DSN:-https://123@deactivated.io/123}
     ports:
       - "8000:8000"
