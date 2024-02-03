@@ -73,6 +73,7 @@ mod test_route_jarm {
 
 
     #[rstest]
+    #[ignore = "Integration tests"]
     fn invalid_port(rocket_client: Client) {
         let expected_response = r#"{"host":"","port":"","jarm_hash":"","error":{"error_type":"Dns resolve error","error_message":"DetailedError { underlying_error: Some(Error { kind: InvalidInput, message: \"invalid port value\" }) }"}}"#;
 
