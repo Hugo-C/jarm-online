@@ -7,7 +7,6 @@ services:
       - "80:80"
     depends_on:
       - jarm_online_api
-      - playwright_dummy_server
 
   jarm_online_api:
     extends:
@@ -18,6 +17,13 @@ services:
       - ALEXA_TOP1M_RAW_DATA_PATH=/alexa_top1M.csv
     volumes:
       - ./tests/fixtures_data/alexa_top1M.csv:/alexa_top1M.csv
+    depends_on:
+      - redis
+
+  redis:
+    extends:
+      file: docker-compose.yml
+      service: redis
 
   playwright_dummy_server:
     container_name: playwright_dummy_server_container
