@@ -76,7 +76,8 @@
                 ></v-divider>
                 Known malicious malware family:
                 <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
-                  <v-chip label size="small" class="ma-1" variant="elevated" color="info">Not yet implemented
+                  <v-chip label size="small" class="ma-1" variant="elevated" color="bg-surface-variant">Not yet
+                    implemented
                     <v-tooltip
                         text="Star the github repo to see new releases in your feed"
                         location="bottom" activator="parent"/>
@@ -85,15 +86,14 @@
               </div>
               <v-expansion-panels class="pa-2">
                 <v-expansion-panel>
-                  <v-expansion-panel-title id="shodanPanel">
-                    Shodan
-                    <!-- TODO add a result count like https://api.shodan.io/shodan/host/count?query=ssl.jarm:29d29d00029d29d00042d42d00000000f78d2dc0ce6e5bbc5b8149a4872356 -->
-                    <!--                <div v-if="computingShodanResultCount" class="w-50">-->
-                    <!--                  <v-progress-linear indeterminate color="primary" :absolute="true"></v-progress-linear>-->
-                    <!--                </div>-->
-                    <!--                <span v-else class="shodanResultCount ">-->
-                    <!--                    <v-chip label variant="elevated" class="mr-5" color="primary">70</v-chip>-->
-                    <!--                </span>-->
+                  <v-expansion-panel-title class="d-flex justify-center bg-surface-variant">
+                    <span class="pa-2">Shodan</span>
+                    <v-progress-linear v-if="computingShodanResultCount" indeterminate color="primary"
+                                       :absolute="true"></v-progress-linear>
+                    <v-chip v-else label variant="elevated" color="primary">{{
+                        this.jarmHashResult.shodanResultCount
+                      }}
+                    </v-chip>
                   </v-expansion-panel-title>
                   <v-expansion-panel-text>
                     <a :href="shodanSearchLink" target="_blank" rel="noopener noreferrer">
@@ -202,10 +202,12 @@ export default {
           topRank: null,
           topDomain: null,
         },
+        shodanResultCount: null,
       },
       computingJarmHash: false,
       computingAlexaRank: false,
       notification: notification,
+      computingShodanResultCount: false,
       shodanImageLink: null,
       shodanSearchLink: null,
       lastScans: null,
@@ -220,30 +222,35 @@ export default {
       this.jarmHashResult.alexa.raw_result = null;
       this.jarmHashResult.alexa.topRank = null;
       this.jarmHashResult.alexa.topDomain = null;
+      this.jarmHashResult.shodanResultCount = null;
       this.shodanImageLink = null;
       this.shodanSearchLink = null;
-    },
-    setJarmHash(hash) {
-      this.jarmHashResult.hash = hash;
-      if (!hash) {
-        return;
-      }
-      this.shodanImageLink = `https://www.shodan.io/search/facet.png?query=ssl.jarm%3A${hash}&facet=product`;
-      this.shodanSearchLink = `https://www.shodan.io/search?query=ssl.jarm:${hash}`;
     },
     async onSubmit(evt) {
       evt.preventDefault();
       this.resetJarmHash();
 
       let hash = await this.lookUpUrl(this.inputUrl);
-      this.setJarmHash(hash);
+      this.jarmHashResult.hash = hash;
       if (!hash) {
-        return;  // Skip alexa as no hash was returned
+        return;
       }
+
+      // Set Shodan results
+      this.shodanCount(this.jarmHashResult.hash).then((value) => {
+        this.jarmHashResult.shodanResultCount = value
+      });
+      this.shodanImageLink = `https://www.shodan.io/search/facet.png?query=ssl.jarm%3A${hash}&facet=product`;
+      this.shodanSearchLink = `https://www.shodan.io/search?query=ssl.jarm:${hash}`;
+
+      // Set alexa results
       this.jarmHashResult.alexa.raw_result = await this.alexaOverlap(this.jarmHashResult.hash);
-      // Parse alexa result
-      this.jarmHashResult.alexa.topRank = this.jarmHashResult.alexa.raw_result.overlapping_domains[0].rank
-      this.jarmHashResult.alexa.topDomain = this.jarmHashResult.alexa.raw_result.overlapping_domains[0].domain
+      const overlapping_domains = this.jarmHashResult.alexa.raw_result.overlapping_domains;
+      if (overlapping_domains.length > 0) {
+        this.jarmHashResult.alexa.topRank = overlapping_domains[0].rank
+        this.jarmHashResult.alexa.topDomain = overlapping_domains[0].domain
+      }
+
     },
     async lookUpUrl(url) {
       let jarm_hash = null;
@@ -294,6 +301,19 @@ export default {
       this.computingAlexaRank = false;
       return result;
     },
+    async shodanCount(hash) {
+      this.computingShodanResultCount = true;
+      const path = `https://api.shodan.io/shodan/host/count?query=ssl.jarm:${hash}`;
+      let result;
+      try {
+        const res = await axios.get(path);
+        result = res.total
+        this.computingShodanResultCount = false;
+      } catch (error) {
+        console.log(error)  // locally we get a CORS error
+      }
+      return result;
+    },
     async fetchLastScans() {
       const path = '/api/v1/last-scans';
       try {
@@ -321,8 +341,9 @@ export default {
 
 <style>
 .v-expansion-panel {
-    min-width: 700px;
+  min-width: 700px;
 }
+
 .searchBarDiv {
   padding-top: 20px;
   padding-bottom: 45px;
@@ -332,17 +353,6 @@ export default {
 
 .hashDisplay {
   font-size: 125%;
-}
-
-#shodanPanel {
-  display: flex;
-}
-
-.shodanResultCount {
-  flex: 1;
-  text-align: right;
-  align-content: flex-end;
-  white-space: nowrap;
 }
 
 #disclaimerLine {
