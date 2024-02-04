@@ -97,8 +97,17 @@ http {
     ssl_protocols TLSv1.3 TLSv1.2;
     ssl_prefer_server_ciphers on;
     add_header   Strict-Transport-Security "max-age=63072000" always;
-    ssl_certificate        /etc/nginx/ssl/www.hugocjarm.software.pem;
-    ssl_certificate_key    /etc/nginx/ssl/www.hugocjarm.software.key;
+    ssl_certificate       /etc/letsencrypt/live/jarm.online/fullchain.pem;
+    ssl_certificate_key   /etc/letsencrypt/live/jarm.online/privkey.pem;
+
+    location /.well-known/acme-challenge {
+        resolver 127.0.0.11 valid=30s;
+        set $upstream letsencrypt;
+        proxy_pass http://$upstream:80;
+        proxy_set_header Host            $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto https;
+    }
 
     location / {
         limit_req zone=mylimit burst=25 delay=10;
