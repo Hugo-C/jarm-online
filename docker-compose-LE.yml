@@ -4,7 +4,7 @@ services:
 
   letsencrypt:
     image: certbot/certbot:latest
-    command: sh -c "certbot certonly --standalone -d jarm.online --text --agree-tos --email contact@jarm.online --server https://acme-v02.api.letsencrypt.org/directory --rsa-key-size 4096 --verbose --keep-until-expiring --preferred-challenges=http && chown -R 1001:1001 /etc/letsencrypt/ && chmod -R 755 /etc/letsencrypt/"
+    command: sh -c "certbot certonly --standalone -d jarm.online -d netdata.jarm.online --text --agree-tos --email contact@jarm.online --server https://acme-v02.api.letsencrypt.org/directory --rsa-key-size 4096 --verbose --keep-until-expiring --preferred-challenges=http && chown -R 1001:1001 /etc/letsencrypt/ && chmod -R 755 /etc/letsencrypt/"
     entrypoint: ""
     volumes:
       - "letsencrypt:/etc/letsencrypt"
