@@ -115,14 +115,17 @@
           </v-container>
         </div>
       </v-expand-transition>
-      <v-divider :thickness="2" class="border-opacity-100" color="info" inset/>
-      <h4> Latest urls requested
+
+      <!-- Latest URLs part -->
+      <v-container fill-height class="w-75">
+        <v-divider :thickness="2" class="border-opacity-100" color="info" inset/>
+        <h4> Latest urls requested</h4>
         <v-progress-circular
             v-if="lastScans === null"
             indeterminate
             color="secondary"
         ></v-progress-circular>
-        <v-expansion-panels v-else multiple>
+        <v-expansion-panels v-else multiple fill-width>
           <v-slide-y-reverse-transition
               class="py-0"
               group
@@ -143,7 +146,7 @@
             </v-expansion-panel>
           </v-slide-y-reverse-transition>
         </v-expansion-panels>
-      </h4>
+      </v-container>
     </v-main>
     <v-footer elevation="2" app>
       <v-row justify="center" no-gutters>
@@ -317,6 +320,9 @@ export default {
 </script>
 
 <style>
+.v-expansion-panel {
+    min-width: 700px;
+}
 .searchBarDiv {
   padding-top: 20px;
   padding-bottom: 45px;
