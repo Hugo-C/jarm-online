@@ -85,13 +85,13 @@
             <v-expansion-panel>
               <v-expansion-panel-title id="shodanPanel">
                 Shodan
-<!-- TODO add a result count like https://api.shodan.io/shodan/host/count?query=ssl.jarm:29d29d00029d29d00042d42d00000000f78d2dc0ce6e5bbc5b8149a4872356 -->
-<!--                <div v-if="computingShodanResultCount" class="w-50">-->
-<!--                  <v-progress-linear indeterminate color="primary" :absolute="true"></v-progress-linear>-->
-<!--                </div>-->
-<!--                <span v-else class="shodanResultCount ">-->
-<!--                    <v-chip label variant="elevated" class="mr-5" color="primary">70</v-chip>-->
-<!--                </span>-->
+                <!-- TODO add a result count like https://api.shodan.io/shodan/host/count?query=ssl.jarm:29d29d00029d29d00042d42d00000000f78d2dc0ce6e5bbc5b8149a4872356 -->
+                <!--                <div v-if="computingShodanResultCount" class="w-50">-->
+                <!--                  <v-progress-linear indeterminate color="primary" :absolute="true"></v-progress-linear>-->
+                <!--                </div>-->
+                <!--                <span v-else class="shodanResultCount ">-->
+                <!--                    <v-chip label variant="elevated" class="mr-5" color="primary">70</v-chip>-->
+                <!--                </span>-->
               </v-expansion-panel-title>
               <v-expansion-panel-text>
                 <a :href="shodanSearchLink" target="_blank" rel="noopener noreferrer">
@@ -114,25 +114,43 @@
     </div>
   </v-expand-transition>
 
-  <div id="footer">
-    <v-divider :thickness="2" class="border-opacity-100" color="info" inset/>
+  <v-divider :thickness="2" class="border-opacity-100" color="info" inset/>
     <h4> Latest urls requested
-      <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
-        <v-chip label size="small" class="ma-1" variant="elevated" color="info">Not yet implemented
-          <v-tooltip
-              text="Star the github repo to see new releases in your feed"
-              location="bottom" activator="parent"/>
-        </v-chip>
-      </a>
+      <v-progress-circular
+          v-if="lastScans === null"
+          indeterminate
+          color="secondary"
+      ></v-progress-circular>
+
+      <v-expansion-panels v-if="lastScans != null" multiple>
+        <v-slide-y-reverse-transition
+            class="py-0"
+            group
+            tag="v-expansion-panel"
+        >
+          <v-expansion-panel
+              v-for="scan in lastScans.slice().reverse()"
+              :key="scan.host"
+              class="ma-1"
+              eager
+          >
+            <v-expansion-panel-title>
+              <span>{{ scan.host }}:{{ scan.port }}</span>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <span>{{ scan.jarm_hash }}</span>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-slide-y-reverse-transition>
+      </v-expansion-panels>
     </h4>
-    <!--    TODO use https://vuetifyjs.com/en/components/expansion-panels/ -->
+
+  <div id="footer">
     <h5 id="footernote">
       hosted with 💙 on
-      <v-img id="gcpimg" src="gcp.png" height="20" width="20" inline="true"></v-img>
-      <v-text class="ma-5"> |</v-text>
-      <a href="https://jarm.statuspage.io/" target="_blank" rel="noopener noreferrer">
-        status page
-      </a>
+      <v-img id="gcpimg" src="gcp.png" height="20" width="20" inline></v-img>
+      <span class="ma-5"> |</span>
+      <a href="https://jarm.statuspage.io/" target="_blank" rel="noopener noreferrer">status page</a>
     </h5>
   </div>
   <!--  Snackbar for notifications-->
@@ -184,7 +202,11 @@ export default {
       notification: notification,
       shodanImageLink: null,
       shodanSearchLink: null,
+      lastScans: null,
     }
+  },
+  async mounted() {
+    await this.fetchLastScans()
   },
   methods: {
     resetJarmHash() {
@@ -265,6 +287,19 @@ export default {
       }
       this.computingAlexaRank = false;
       return result;
+    },
+    async fetchLastScans() {
+      const path = '/api/v1/last-scans';
+      try {
+        const res = await axios.get(path);
+        this.lastScans = res.data.last_scans;
+      } catch (error) {
+        this.notification.display(
+            'Failed to query the API for last scans',
+            error,
+        );
+      }
+      setTimeout(this.fetchLastScans, 5000);  // Refresh in 5s
     },
     async copy() {
       try {
