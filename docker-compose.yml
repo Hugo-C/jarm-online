@@ -18,6 +18,16 @@ services:
     container_name: jarm_online_api_container
     environment:
       - ROCKET_PROFILE=release
+      - ROCKET_DATABASES={redis_db={url="redis://redis"}}
       - ROCKET_SENTRY_DSN=${ROCKET_SENTRY_DSN:-https://123@deactivated.io/123}
     ports:
       - "8000:8000"
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: jarm_online_redis_container
+    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - "6379:6379"

@@ -18,14 +18,24 @@ services:
   jarm_online_api:
     image: hugocker/jarm_online_api
     container_name: jarm_online_api_container
-    stop_signal: SIGKILL  # SIGTERM is allowed in config starting with rocket.rs 0.5
     environment:
-      - ROCKET_ENV=production
+      - ROCKET_PROFILE=release
+      - ROCKET_DATABASES={redis_db={url="redis://redis"}}
       - ROCKET_SENTRY_DSN=${ROCKET_SENTRY_DSN}
       - ROCKET_SENTRY_TRANSACTION_SAMPLE_RATE=1.0
       - ALEXA_TOP1M_RAW_DATA_PATH=/alexa_top1M.csv
     volumes:
       - ./data/result_aggregated.csv:/alexa_top1M.csv
+    restart: unless-stopped
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: jarm_online_redis_container
+    command: redis-server --save 60 100 3600 1
+    volumes:
+      - ./redis_data:/data
     restart: unless-stopped
 
 volumes:

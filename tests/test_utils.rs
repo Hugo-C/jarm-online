@@ -30,7 +30,6 @@ mod test_utils {
     }
 
     #[test]
-    #[ignore = "Crash other tests ran in parallel"]
     fn scan_timeout_in_seconds_fail_on_invalid_values() {
         let _mutex = ENV_VAR_MUTEX.lock().unwrap();
         env::set_var("SCAN_TIMEOUT_IN_SECONDS", "-1");

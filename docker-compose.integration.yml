@@ -1,0 +1,14 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: jarm_online_redis_container
+    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - "6379:6379"
+
+  playwright_dummy_server:
+    container_name: playwright_dummy_server_container
+    image: hugocker/nginx_tls_dummy_server:latest
+    ports:
+      - "400-443:400-443"
+
