@@ -138,7 +138,7 @@
                 eager
             >
               <v-expansion-panel-title>
-                <span>{{ scan.host }}:{{ scan.port }}</span>
+                <span class="text-secondary mr-1">{{ scan.port }}</span><span>{{ scan.host }}</span>
               </v-expansion-panel-title>
               <v-expansion-panel-text>
                 <span>{{ scan.jarm_hash }}</span>
