@@ -7,6 +7,7 @@ services:
       - "80:80"
     depends_on:
       - jarm_online_api
+      - playwright_dummy_server
 
   jarm_online_api:
     extends:
