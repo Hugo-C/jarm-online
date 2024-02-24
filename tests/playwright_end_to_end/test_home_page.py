@@ -44,14 +44,41 @@ def test_latest_urls(home_page: Page):
     result = home_page.get_by_text("Jarm hash is:")
     expect(result).to_be_hidden()  # sanity check
 
-    # TODO when port parsing works, try multiple latest url
     latest_url_title = home_page.get_by_text(HOST_TO_SCAN)
     latest_url_result = home_page.get_by_text(URL_EXPECTED_JARM_RESULT)
     expect(latest_url_title).to_be_visible()
     expect(latest_url_result).to_be_hidden()
     latest_url_title.click()
     expect(latest_url_result).to_be_visible()
-    latest_url_result.all_text_contents()
+    latest_url_port = home_page.get_by_text("443")  # Default port is shown
+    expect(latest_url_port).to_be_visible()
+
+
+def test_latest_urls_for_specific_port(home_page: Page):
+    specific_port = "440"
+    latest_url_header = home_page.get_by_role("heading", name=re.compile("Latest urls .+"))
+    expect(latest_url_header).to_be_visible()
+
+    # Submit urls for it to appears in latest urls
+    submit_scan_address_field = home_page.get_by_placeholder(INPUT_PLACEHOLDER)
+    url_with_unusual_port = f"{URL_TO_SCAN}:{specific_port}"
+    submit_scan_address_field.fill(url_with_unusual_port)
+    submit_scan_address_field.press("Enter")
+
+    # Hide the result so it won't interfere with tests
+    submit_scan_address_field.fill("")
+    submit_scan_address_field.press("Enter")
+    result = home_page.get_by_text("Jarm hash is:")
+    expect(result).to_be_hidden()  # sanity check
+
+    latest_url_title = home_page.get_by_text(HOST_TO_SCAN)
+    latest_url_result = home_page.get_by_text(URL_EXPECTED_JARM_RESULT)
+    expect(latest_url_title).to_be_visible()
+    expect(latest_url_result).to_be_hidden()
+    latest_url_title.click()
+    expect(latest_url_result).to_be_visible()
+    latest_url_port = home_page.get_by_text(specific_port)
+    expect(latest_url_port).to_be_visible()
 
 
 def test_scan_error_on_invalid_tld(home_page: Page):

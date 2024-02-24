@@ -252,13 +252,26 @@ export default {
       }
 
     },
+    parseHostAndPort(url) {
+      let port = 443;
+      let host = url;
+      const hostWithPortRegexp = /(?<host>.*):(?<port>\d{2,4})/
+      const match = url.match(hostWithPortRegexp);
+      if (match !== null) {  // if port is specified, overwrite the default one
+        host = match.groups.host
+        port = match.groups.port
+      }
+      return [host, port]
+    },
     async lookUpUrl(url) {
       let jarm_hash = null;
       this.computingJarmHash = true;
       const path = '/api/v1/jarm';
+      const [host, port] = this.parseHostAndPort(url);
       const payload = {
         params: {
-          host: url,
+          host: host,
+          port: port,
         }
       };
       try {

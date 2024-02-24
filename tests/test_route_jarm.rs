@@ -71,6 +71,22 @@ mod test_route_jarm {
         assert_eq!(response.into_json::<Value>().unwrap(), expected_response);
     }
 
+    #[rstest]
+    #[ignore = "Integration tests"]
+    fn host_with_unusual_port(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
+        let expected_response = json!({
+            "host": "localhost",
+            "port": "442",
+            "jarm_hash": DUMMY_SERVER_JARM_HASH,
+            "error": null,
+        });
+
+        let response = rocket_client.get("/jarm?host=localhost&port=442").dispatch();
+
+        assert_eq!(response.into_json::<Value>().unwrap(), expected_response);
+    }
+
+
 
     #[rstest]
     #[ignore = "Integration tests"]
