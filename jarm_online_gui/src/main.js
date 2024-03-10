@@ -1,6 +1,6 @@
 import {createApp} from 'vue'
 
-import {createMetaManager} from 'vue-meta'
+import { createHead } from '@unhead/vue'
 import * as Sentry from "@sentry/vue"
 import App from './App.vue'
 import createVuetify from "./plugins/vuetify";
@@ -28,7 +28,8 @@ Sentry.init({
     replaysOnErrorSampleRate: 1.0,
 });
 
+const head = createHead()
 app
     .use(createVuetify)
-    .use(createMetaManager())
+    .use(head)
     .mount('#app')
