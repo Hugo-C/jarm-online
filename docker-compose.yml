@@ -9,8 +9,6 @@ services:
     container_name: jarm_online_gui_container
     ports:
       - "80:80"
-    depends_on:
-      - jarm_online_api
 
   jarm_online_api:
     build: .
@@ -22,8 +20,6 @@ services:
       - ROCKET_SENTRY_DSN=${ROCKET_SENTRY_DSN:-https://123@deactivated.io/123}
     ports:
       - "8000:8000"
-    depends_on:
-      - redis
 
   redis:
     image: redis:7-alpine
