@@ -20,8 +20,8 @@ Sentry.init({
     app,
     dsn: sentry_dsn,
     integrations: [
-        new Sentry.BrowserTracing(),
-        new Sentry.Replay(),
+        Sentry.browserTracingIntegration(),
+        Sentry.replayIntegration(),
     ],
     tracesSampleRate: 1.0,
     replaysSessionSampleRate: 0.1,

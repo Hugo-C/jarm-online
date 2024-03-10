@@ -1,5 +1,5 @@
 # Taken from https://cli.vuejs.org/guide/deployment.html#docker-nginx
-FROM node:18 as build-stage
+FROM node:20 as build-stage
 ARG VUE_APP_SENTRY_DSN
 RUN echo "Sentry dsn set to $VUE_APP_SENTRY_DSN"
 WORKDIR /app
