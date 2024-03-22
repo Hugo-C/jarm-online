@@ -1,8 +1,8 @@
 import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
 import {sentryVitePlugin} from "@sentry/vite-plugin";
-
-const path = require("path");
+import {codecovVitePlugin} from "@codecov/vite-plugin";
+import * as path from "path";
 
 
 // https://vitejs.dev/config/
@@ -20,6 +20,11 @@ export default defineConfig({
             project: process.env.SENTRY_PROJECT,
             authToken: process.env.SENTRY_AUTH_TOKEN,
         }),
+        codecovVitePlugin({
+            enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+            bundleName: "jarm-online",
+            uploadToken: process.env.CODECOV_TOKEN,
+        }),
     ],
     resolve: {
         alias: {
@@ -27,7 +32,7 @@ export default defineConfig({
         },
     },
     build: {
-        chunkSizeWarningLimit: 750,
+        chunkSizeWarningLimit: 800,
         sourcemap: true,
     },
 })

@@ -1,0 +1,22 @@
+name: Vite
+
+concurrency: production
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build npm/vite to send codecov stats
+        working-directory: ./jarm_online_gui
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          npm install
+          npm run build
