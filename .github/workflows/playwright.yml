@@ -12,6 +12,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Run playwright test
         run: docker compose -f docker-compose.playwright.yml run pytest_runner

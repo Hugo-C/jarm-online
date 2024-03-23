@@ -2,6 +2,7 @@
   "name": "jarm_online_gui",
   "version": "0.2.2",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -19,11 +20,12 @@
     "vuetify": "^3.3"
   },
   "devDependencies": {
+    "@codecov/vite-plugin": "^0.0.1-beta.5",
     "@sentry/vite-plugin": "^2.7",
-    "@vitejs/plugin-vue": "^4.3",
+    "@vitejs/plugin-vue": "^5",
     "eslint": "^8.50",
     "eslint-plugin-vue": "^9.17",
-    "vite": "^4.4"
+    "vite": "^5"
   },
   "eslintConfig": {
     "root": true,
