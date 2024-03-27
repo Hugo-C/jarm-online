@@ -1,4 +1,5 @@
 use ::rocket_sentry::RocketSentry;
+use env_logger::Env;
 use jarm_online::build_rocket;
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::Header;
@@ -25,6 +26,7 @@ impl Fairing for CORS {
 
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     build_rocket()
         .attach(CORS)
         .attach(RocketSentry::fairing())
