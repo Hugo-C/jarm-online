@@ -14,6 +14,8 @@ use rocket::serde::json::Json;
 use rust_jarm::Jarm;
 use serde::Serialize;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use rocket::response::status::Custom;
+use rocket::http::Status;
 use rocket::serde::Deserialize;
 use rocket::serde::json::serde_json;
 use rust_jarm::error::JarmError;
@@ -29,9 +31,14 @@ pub const LAST_SCAN_SIZE_RETURNED: isize = 10;
 #[database("redis_db")]
 struct Db(deadpool_redis::Pool);
 
+
 #[derive(Serialize)]
 struct ErrorResponse {
-    // TODO rename in JarmErrorResponse
+    error: String,
+}
+
+#[derive(Serialize)]
+struct JarmErrorResponse {
     error_type: String,
     error_message: String,
 }
@@ -41,7 +48,7 @@ struct JarmResponse {
     host: String,
     port: String,
     jarm_hash: String,
-    error: Option<ErrorResponse>,
+    error: Option<JarmErrorResponse>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -57,7 +64,7 @@ struct LastScanListResponse {
 }
 
 #[derive(Serialize)]
-struct AlexaOverlapResponse {
+struct AlexaOverlapResponse {  // TODO Should be renamed TrancoOverlapResponse once Alexa is removed
     overlapping_domains: Vec<RankedDomain>,
 }
 
@@ -129,6 +136,11 @@ fn alexa_overlap(alexa_top1m: &State<AlexaTop1M>, jarm_hash: String) -> Json<Ale
     Json(AlexaOverlapResponse { overlapping_domains: overlap })
 }
 
+#[get("/?<jarm_hash>")]
+fn tranco_overlap(jarm_hash: String) -> Result<Json<AlexaOverlapResponse>, Custom<Json<ErrorResponse>>> {
+    Err(Custom(Status::ServiceUnavailable, Json(ErrorResponse { error: "db not yet loaded".to_string()})))
+}
+
 fn build_error_json(jarm_error: JarmError) -> Json<JarmResponse> {
     // error_message is a debug view of a an unknown error, to be improved.
     let (error_type, error_message) = match jarm_error {
@@ -146,7 +158,7 @@ fn build_error_json(jarm_error: JarmError) -> Json<JarmResponse> {
         host: "".to_string(),
         port: "".to_string(),
         jarm_hash: "".to_string(),
-        error: Some(ErrorResponse { error_type, error_message }),
+        error: Some(JarmErrorResponse { error_type, error_message }),
     })
 }
 
@@ -157,6 +169,7 @@ pub fn build_rocket() -> Rocket<Build> {
         .mount("/jarm", routes![jarm])
         .mount("/last-scans", routes![last_scans])
         .mount("/alexa-overlap", routes![alexa_overlap])
+        .mount("/tranco-overlap", routes![tranco_overlap])
         .attach(Db::init())
         .manage(alexa_top1m)
 }
