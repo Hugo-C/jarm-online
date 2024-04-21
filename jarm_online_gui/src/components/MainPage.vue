@@ -49,20 +49,20 @@
           <v-container fill-height class="w-75">
             <v-row align="center" justify="center">
               <div>
-                Alexa top 1 Million overlap:
+                <a href="https://tranco-list.eu/">Tranco</a> top 1 Million overlap:
                 <v-progress-circular
-                    v-if="computingAlexaRank"
+                    v-if="computingTrancoRank"
                     indeterminate
                     color="secondary"
                 ></v-progress-circular>
-                <span v-else-if="this.jarmHashResult.alexa.topRank != null">
-          <v-chip label variant="elevated" color="primary">{{ this.jarmHashResult.alexa.topRank }}th Rank</v-chip>
-          <b class="pa-2" size="large"> {{ this.jarmHashResult.alexa.topDomain }}</b>
+                <span v-else-if="this.jarmHashResult.tranco.topRank != null">
+          <v-chip label variant="elevated" color="primary">{{ this.jarmHashResult.tranco.topRank }}th Rank</v-chip>
+          <b class="pa-2" size="large"> {{ this.jarmHashResult.tranco.topDomain }}</b>
           <a
-              v-if="this.jarmHashResult.alexa.raw_result.overlapping_domains.length > 1"
-              :href="'/api/v1/alexa-overlap?jarm_hash=' + jarmHashResult.hash">
+              v-if="this.jarmHashResult.tranco.raw_result.overlapping_domains.length > 1"
+              :href="'/api/v1/tranco-overlap?jarm_hash=' + jarmHashResult.hash">
             See {{
-              this.jarmHashResult.alexa.raw_result.overlapping_domains.length - 1
+              this.jarmHashResult.tranco.raw_result.overlapping_domains.length - 1
             }} other matching domains</a>
         </span>
                 <span v-else>
@@ -197,7 +197,7 @@ export default {
       inputUrl: null,
       jarmHashResult: {
         hash: null,
-        alexa: {
+        tranco: {
           raw_result: null,
           topRank: null,
           topDomain: null,
@@ -205,7 +205,7 @@ export default {
         shodanResultCount: null,
       },
       computingJarmHash: false,
-      computingAlexaRank: false,
+      computingTrancoRank: false,
       notification: notification,
       computingShodanResultCount: false,
       shodanImageLink: null,
@@ -219,9 +219,9 @@ export default {
   methods: {
     resetJarmHash() {
       this.jarmHashResult.hash = null;
-      this.jarmHashResult.alexa.raw_result = null;
-      this.jarmHashResult.alexa.topRank = null;
-      this.jarmHashResult.alexa.topDomain = null;
+      this.jarmHashResult.tranco.raw_result = null;
+      this.jarmHashResult.tranco.topRank = null;
+      this.jarmHashResult.tranco.topDomain = null;
       this.jarmHashResult.shodanResultCount = null;
       this.shodanImageLink = null;
       this.shodanSearchLink = null;
@@ -243,12 +243,12 @@ export default {
       this.shodanImageLink = `https://www.shodan.io/search/facet.png?query=ssl.jarm%3A${hash}&facet=product`;
       this.shodanSearchLink = `https://www.shodan.io/search?query=ssl.jarm:${hash}`;
 
-      // Set alexa results
-      this.jarmHashResult.alexa.raw_result = await this.alexaOverlap(this.jarmHashResult.hash);
-      const overlapping_domains = this.jarmHashResult.alexa.raw_result.overlapping_domains;
+      // Set Tranco results
+      this.jarmHashResult.tranco.raw_result = await this.trancoOverlap(this.jarmHashResult.hash);
+      const overlapping_domains = this.jarmHashResult.tranco.raw_result.overlapping_domains;
       if (overlapping_domains.length > 0) {
-        this.jarmHashResult.alexa.topRank = overlapping_domains[0].rank
-        this.jarmHashResult.alexa.topDomain = overlapping_domains[0].domain
+        this.jarmHashResult.tranco.topRank = overlapping_domains[0].rank
+        this.jarmHashResult.tranco.topDomain = overlapping_domains[0].domain
       }
 
     },
@@ -293,9 +293,9 @@ export default {
       this.computingJarmHash = false;
       return jarm_hash;
     },
-    async alexaOverlap(hash) {
-      this.computingAlexaRank = true;
-      const path = '/api/v1/alexa-overlap';
+    async trancoOverlap(hash) {
+      this.computingTrancoRank = true;
+      const path = '/api/v1/tranco-overlap';
       const payload = {
         params: {
           jarm_hash: hash,
@@ -311,7 +311,7 @@ export default {
             error,
         );
       }
-      this.computingAlexaRank = false;
+      this.computingTrancoRank = false;
       return result;
     },
     async shodanCount(hash) {

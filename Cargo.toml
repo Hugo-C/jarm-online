@@ -16,6 +16,11 @@ openssl = { version = "~0.10.55", features = ["vendored"] }  # Required for sent
 sentry = "0.32"
 rocket-sentry = "0.17"
 redis = "0.25"
+log = "0.4"
+env_logger = "0.11"
+async-std = { version = "1.12", features = ["attributes", "tokio1"] }
+reqwest = { version = "0.12.2", features = ["stream"] }
+tempfile = "3.10.1"
 
 [dependencies.rocket_db_pools]
 version = "0.1.0"

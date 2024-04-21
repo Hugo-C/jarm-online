@@ -16,8 +16,10 @@ services:
     environment:
       - ROCKET_SENTRY_DSN=123  # this way sentry is disabled but do not crash
       - ALEXA_TOP1M_RAW_DATA_PATH=/alexa_top1M.csv
+      - FORCE_TRANCO_TOP1M_RAW_DATA_PATH=/tranco_top1M.csv
     volumes:
       - ./tests/fixtures_data/alexa_top1M.csv:/alexa_top1M.csv
+      - ./tests/fixtures_data/tranco_top1M.csv:/tranco_top1M.csv
     depends_on:
       - redis
 

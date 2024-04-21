@@ -3,22 +3,28 @@ extern crate rocket;
 
 pub mod utils;
 pub mod alexa_top1m;
+pub mod tranco_top1m;
 
 use rocket_db_pools::{Connection, deadpool_redis};
 use crate::alexa_top1m::{AlexaTop1M, RankedDomain};
+use crate::tranco_top1m::{TrancoTop1M};
+use crate::tranco_top1m::RankedDomain as TrancoRankedDomain;
 
 use std::env;
 use std::path::Path;
-use rocket::{Build, Rocket, State};
+use rocket::{Build, fairing, Rocket, State};
 use rocket::serde::json::Json;
 use rust_jarm::Jarm;
 use serde::Serialize;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use rocket::fairing::AdHoc;
+use rocket::response::status::Custom;
+use rocket::http::Status;
 use rocket::serde::Deserialize;
 use rocket::serde::json::serde_json;
 use rust_jarm::error::JarmError;
 use rocket_db_pools::{Database};
-use rocket_db_pools::deadpool_redis::redis::{AsyncCommands};
+use rocket_db_pools::deadpool_redis::redis::AsyncCommands;
 
 pub const DEFAULT_SCAN_TIMEOUT_IN_SECONDS: u64 = 15;
 pub const REDIS_LAST_SCAN_LIST_KEY: &str = "redis_last_scan_list_key";
@@ -27,11 +33,16 @@ pub const LAST_SCAN_SIZE_RETURNED: isize = 10;
 
 #[derive(Database)]
 #[database("redis_db")]
-struct Db(deadpool_redis::Pool);
+pub struct Db(deadpool_redis::Pool);
+
 
 #[derive(Serialize)]
 struct ErrorResponse {
-    // TODO rename in JarmErrorResponse
+    error: String,
+}
+
+#[derive(Serialize)]
+struct JarmErrorResponse {
     error_type: String,
     error_message: String,
 }
@@ -41,7 +52,7 @@ struct JarmResponse {
     host: String,
     port: String,
     jarm_hash: String,
-    error: Option<ErrorResponse>,
+    error: Option<JarmErrorResponse>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -59,6 +70,11 @@ struct LastScanListResponse {
 #[derive(Serialize)]
 struct AlexaOverlapResponse {
     overlapping_domains: Vec<RankedDomain>,
+}
+
+#[derive(Serialize)]
+struct TrancoOverlapResponse {
+    overlapping_domains: Vec<TrancoRankedDomain>,
 }
 
 pub fn scan_timeout_in_seconds() -> u64 {
@@ -129,6 +145,16 @@ fn alexa_overlap(alexa_top1m: &State<AlexaTop1M>, jarm_hash: String) -> Json<Ale
     Json(AlexaOverlapResponse { overlapping_domains: overlap })
 }
 
+#[get("/?<jarm_hash>")]
+async fn tranco_overlap(redis_client: Connection<Db>, jarm_hash: String) -> Result<Json<TrancoOverlapResponse>, Custom<Json<ErrorResponse>>> {
+    let mut tranco = TrancoTop1M::from(redis_client);
+    if !tranco.is_initialized().await {
+        return Err(Custom(Status::ServiceUnavailable, Json(ErrorResponse { error: "db not yet loaded".to_string()})))
+    }
+    let overlapping_domains = tranco.get(jarm_hash).await;
+    Ok(Json(TrancoOverlapResponse { overlapping_domains }))
+}
+
 fn build_error_json(jarm_error: JarmError) -> Json<JarmResponse> {
     // error_message is a debug view of a an unknown error, to be improved.
     let (error_type, error_message) = match jarm_error {
@@ -146,17 +172,42 @@ fn build_error_json(jarm_error: JarmError) -> Json<JarmResponse> {
         host: "".to_string(),
         port: "".to_string(),
         jarm_hash: "".to_string(),
-        error: Some(ErrorResponse { error_type, error_message }),
+        error: Some(JarmErrorResponse { error_type, error_message }),
     })
 }
 
-pub fn build_rocket() -> Rocket<Build> {
+pub fn build_rocket_without_tranco_initialisation() -> Rocket<Build> {
     let alexa_top1m = AlexaTop1M::new(&alexa_top1m_raw_data_path())
         .expect("AlexaTop1M built correctly");
     rocket::build()
         .mount("/jarm", routes![jarm])
         .mount("/last-scans", routes![last_scans])
         .mount("/alexa-overlap", routes![alexa_overlap])
+        .mount("/tranco-overlap", routes![tranco_overlap])
         .attach(Db::init())
         .manage(alexa_top1m)
+}
+
+pub fn build_rocket() -> Rocket<Build> {
+    let rocket = build_rocket_without_tranco_initialisation();
+    rocket.attach(AdHoc::try_on_ignite("Initialize tranco", initialize_tranco_in_redis))
+}
+
+async fn initialize_tranco_in_redis(rocket: Rocket<Build>) -> fairing::Result {
+    let pool = match Db::fetch(&rocket) {
+        Some(db) => db.0.clone(),
+        None => return Err(rocket)
+    };
+
+    rocket::tokio::task::spawn(async move {
+        let connection = match pool.get().await {
+            Ok(connection) => connection,
+            Err(_) => return,
+        };
+        let mut tranco = TrancoTop1M::new(connection);
+        tranco.initialize().await;
+    });
+    // We don't wait for the initialization to complete.
+    // This means it can be stopped unexpectedly and must be able to recover from it on the next run
+    Ok(rocket)
 }
