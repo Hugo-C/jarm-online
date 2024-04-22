@@ -18,13 +18,6 @@ lazy_static! {
     static ref REDIS_MUTEX: Mutex<()> = Mutex::default();  // restrict redis parallel access
 }
 
-
-#[fixture]
-#[once]
-pub fn alexa_top1m_path() -> &'static Path {
-    Path::new("tests/fixtures_data/alexa_top1M.csv")
-}
-
 #[fixture]
 #[once]
 pub fn tranco_top1m_path() -> &'static Path {
@@ -33,22 +26,20 @@ pub fn tranco_top1m_path() -> &'static Path {
 
 #[fixture]
 #[once]
-pub fn set_env_var_top1m_path(alexa_top1m_path: &'static Path, tranco_top1m_path: &'static Path) -> &'static Path {
-    env::set_var("ALEXA_TOP1M_RAW_DATA_PATH", alexa_top1m_path.to_str().expect("valid path"));
+pub fn set_env_var_top1m_path(tranco_top1m_path: &'static Path) {
     env::set_var("FORCE_TRANCO_TOP1M_RAW_DATA_PATH", tranco_top1m_path.to_str().expect("valid path"));
-    alexa_top1m_path
 }
 
 #[fixture]
 #[allow(unused_variables)]
-pub fn rocket_client(set_env_var_top1m_path: &'static Path) -> Client {
+pub fn rocket_client(set_env_var_top1m_path: ()) -> Client {
     let test_rocket = build_rocket();
     Client::tracked(test_rocket).expect("valid rocket instance")
 }
 
 #[fixture]
 #[allow(unused_variables)]
-pub fn rocket_client_without_tranco_init(set_env_var_top1m_path: &'static Path) -> Client {
+pub fn rocket_client_without_tranco_init(set_env_var_top1m_path: ()) -> Client {
     let test_rocket = build_rocket_without_tranco_initialisation();
     Client::tracked(test_rocket).expect("valid rocket instance")
 }

@@ -2,17 +2,14 @@
 extern crate rocket;
 
 pub mod utils;
-pub mod alexa_top1m;
 pub mod tranco_top1m;
 
 use rocket_db_pools::{Connection, deadpool_redis};
-use crate::alexa_top1m::{AlexaTop1M, RankedDomain};
 use crate::tranco_top1m::{TrancoTop1M};
 use crate::tranco_top1m::RankedDomain as TrancoRankedDomain;
 
 use std::env;
-use std::path::Path;
-use rocket::{Build, fairing, Rocket, State};
+use rocket::{Build, fairing, Rocket};
 use rocket::serde::json::Json;
 use rust_jarm::Jarm;
 use serde::Serialize;
@@ -68,11 +65,6 @@ struct LastScanListResponse {
 }
 
 #[derive(Serialize)]
-struct AlexaOverlapResponse {
-    overlapping_domains: Vec<RankedDomain>,
-}
-
-#[derive(Serialize)]
 struct TrancoOverlapResponse {
     overlapping_domains: Vec<TrancoRankedDomain>,
 }
@@ -82,12 +74,6 @@ pub fn scan_timeout_in_seconds() -> u64 {
         .unwrap_or(DEFAULT_SCAN_TIMEOUT_IN_SECONDS.to_string())
         .parse::<u64>()
         .expect("Valid timeout value")
-}
-
-pub fn alexa_top1m_raw_data_path() -> Box<Path> {
-    let raw_path = env::var("ALEXA_TOP1M_RAW_DATA_PATH")
-        .expect("ALEXA_TOP1M_RAW_DATA_PATH env var has to be set");
-    Path::new(&raw_path).into()
 }
 
 #[get("/?<host>&<port>")]
@@ -137,15 +123,6 @@ async fn last_scans(mut redis_client: Connection<Db>) -> Json<LastScanListRespon
 }
 
 #[get("/?<jarm_hash>")]
-fn alexa_overlap(alexa_top1m: &State<AlexaTop1M>, jarm_hash: String) -> Json<AlexaOverlapResponse> {  // TODO try str
-    let overlap = match alexa_top1m.get(jarm_hash.as_str()) {
-        None => vec![],
-        Some(overlap) => overlap.to_vec()
-    };
-    Json(AlexaOverlapResponse { overlapping_domains: overlap })
-}
-
-#[get("/?<jarm_hash>")]
 async fn tranco_overlap(redis_client: Connection<Db>, jarm_hash: String) -> Result<Json<TrancoOverlapResponse>, Custom<Json<ErrorResponse>>> {
     let mut tranco = TrancoTop1M::from(redis_client);
     if !tranco.is_initialized().await {
@@ -177,15 +154,11 @@ fn build_error_json(jarm_error: JarmError) -> Json<JarmResponse> {
 }
 
 pub fn build_rocket_without_tranco_initialisation() -> Rocket<Build> {
-    let alexa_top1m = AlexaTop1M::new(&alexa_top1m_raw_data_path())
-        .expect("AlexaTop1M built correctly");
     rocket::build()
         .mount("/jarm", routes![jarm])
         .mount("/last-scans", routes![last_scans])
-        .mount("/alexa-overlap", routes![alexa_overlap])
         .mount("/tranco-overlap", routes![tranco_overlap])
         .attach(Db::init())
-        .manage(alexa_top1m)
 }
 
 pub fn build_rocket() -> Rocket<Build> {

@@ -40,16 +40,6 @@ GET api/v1/jarm?host=<host>&port=<port>
 
 It takes a required `host` parameter and optionally `port` (default to 443).
 
-### Retrieve domains from alexa top 1 million that match a jarm hash
-
-**DEPRECATED** see `tranco-overlap` instead 
-
-````http request
-GET api/v1/alexa-overlap?jarm_hash=<jarm-hash>
-````
-
-The returned list is ordered by top alexa rank first
-
 ### Retrieve domains from tranco top 1 million that match a jarm hash
 
 ````http request
