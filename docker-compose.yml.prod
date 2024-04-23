@@ -23,9 +23,7 @@ services:
       - ROCKET_DATABASES={redis_db={url="redis://redis"}}
       - ROCKET_SENTRY_DSN=${ROCKET_SENTRY_DSN}
       - ROCKET_SENTRY_TRACES_SAMPLE_RATE=1.0
-      - ALEXA_TOP1M_RAW_DATA_PATH=/alexa_top1M.csv
-    volumes:
-      - ./data/result_aggregated.csv:/alexa_top1M.csv
+      - TRANCO_TOP1M_S3_URL=https://storage.googleapis.com/tranco-jarm/jarm-tranco-top-1m.csv
     restart: unless-stopped
     depends_on:
       - redis
