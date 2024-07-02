@@ -1,3 +1,5 @@
+use std::sync::Arc;
+use sentry::TransactionContext;
 use ::rocket_sentry::RocketSentry;
 use env_logger::Env;
 use jarm_online::build_rocket;
@@ -27,9 +29,31 @@ impl Fairing for CORS {
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
-    build_rocket()
+    let rocket_instance = build_rocket();
+    // Get the default configured sample rate from `Rocket.toml`
+    let default_rate = rocket_instance
+        .figment()
+        .extract_inner::<f32>("sentry_traces_sample_rate")
+        .unwrap_or(1.);
+    let traces_sampler = move |ctx: &TransactionContext| -> f32 {
+        match ctx.name() {
+            "GET /last-scans" => {
+                if default_rate == 0. {
+                    0.  // Allow to disable Sentry completely
+                } else {
+                    0.0001
+                }
+            },
+            _ => default_rate,
+        }
+    };
+    let rocket_sentry = RocketSentry::builder()
+        .traces_sampler(Arc::new(traces_sampler))
+        .build();
+
+    rocket_instance
         .attach(CORS)
-        .attach(RocketSentry::fairing())
+        .attach(rocket_sentry)
         .launch()
         .await?;
     Ok(())
