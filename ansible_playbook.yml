@@ -83,6 +83,11 @@
         path: "{{ project_dir }}/nginx"
         state: directory
 
+    - name: Create nginx logs directory
+      file:
+        path: "{{ project_dir }}/nginx_logs"
+        state: directory
+
     - name: Copy nginx conf
       ansible.builtin.copy:
         src: /git/jarm-online/jarm_online_gui/nginx.conf.prod
@@ -114,3 +119,9 @@
       community.docker.docker_compose:
         project_src: "{{ project_dir }}"
         pull: true
+
+    - name: Add logrotate to nginx
+      ansible.builtin.copy:
+        src: /git/jarm-online/nginx_log_rotate
+        dest: "/etc/logrotate.d/nginx"
+        force: true
