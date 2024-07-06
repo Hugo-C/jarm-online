@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   jarm_online_gui:
     build:
