@@ -34,6 +34,7 @@ services:
 
   pytest_runner:
     image: hugocker/playwright_runner
+    command: --tracing=retain-on-failure --screenshot=only-on-failure
     environment:
       - PLAYWRIGHT_URL_UNDER_TEST=http://jarm_online_gui/
     volumes:
