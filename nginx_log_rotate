@@ -1,0 +1,14 @@
+/srv/opt/jarm_online/nginx_logs/*.log {
+  daily
+  missingok
+  rotate 31
+  dateext
+  compress
+  delaycompress
+  notifempty
+  sharedscripts
+  postrotate
+    cd /srv/opt/jarm_online/ \
+      && /usr//bin/docker compose kill -s USR1 jarm_online_gui
+  endscript
+}

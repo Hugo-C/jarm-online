@@ -1,10 +1,10 @@
-version: '3'
 services:
   jarm_online_gui:
     image: hugocker/jarm_online_gui
     container_name: jarm_online_gui_container
     volumes:
        - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+       - ./nginx_logs:/var/log/nginx
        - letsencrypt:/etc/letsencrypt:ro
     restart: unless-stopped
     ports:
