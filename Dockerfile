@@ -1,4 +1,4 @@
-FROM rust:1.77-bullseye AS build-stage
+FROM rust:1.80-bullseye AS build-stage
 
 ARG BUILD_TARGET="x86_64-unknown-linux-musl"
 ARG BUILD_OPTIONS="--release --target $BUILD_TARGET"
