@@ -1,3 +1,4 @@
+use std::env;
 use std::sync::Arc;
 use sentry::TransactionContext;
 use ::rocket_sentry::RocketSentry;
@@ -35,13 +36,18 @@ async fn main() -> Result<(), rocket::Error> {
         .figment()
         .extract_inner::<f32>("sentry_traces_sample_rate")
         .unwrap_or(1.);
+    let last_scans_sample_rate_default: f32 = 0.;
+    let last_scans_sample_rate = match env::var("LAST_SCAN_SAMPLE_RATE"){
+        Ok(value) => value.parse::<f32>().unwrap_or(last_scans_sample_rate_default),
+        Err(_) => last_scans_sample_rate_default,
+    };
     let traces_sampler = move |ctx: &TransactionContext| -> f32 {
         match ctx.name() {
             "GET /last-scans" => {
                 if default_rate == 0. {
                     0.  // Allow to disable Sentry completely
                 } else {
-                    0.0001
+                    last_scans_sample_rate
                 }
             },
             _ => default_rate,
