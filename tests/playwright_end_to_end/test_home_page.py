@@ -44,8 +44,8 @@ def test_latest_urls(home_page: Page):
     result = home_page.get_by_text("Jarm hash is:")
     expect(result).to_be_hidden()  # sanity check
 
-    latest_url_title = home_page.get_by_text(HOST_TO_SCAN)
-    latest_url_result = home_page.get_by_text(URL_EXPECTED_JARM_RESULT)
+    latest_url_title = home_page.get_by_text(HOST_TO_SCAN).first
+    latest_url_result = home_page.get_by_text(URL_EXPECTED_JARM_RESULT).first
     expect(latest_url_title).to_be_visible()
     expect(latest_url_result).to_be_hidden()
     latest_url_title.click()
@@ -71,8 +71,8 @@ def test_latest_urls_for_specific_port(home_page: Page):
     result = home_page.get_by_text("Jarm hash is:")
     expect(result).to_be_hidden()  # sanity check
 
-    latest_url_title = home_page.get_by_text(HOST_TO_SCAN)
-    latest_url_result = home_page.get_by_text(URL_EXPECTED_JARM_RESULT)
+    latest_url_title = home_page.get_by_text(HOST_TO_SCAN).first
+    latest_url_result = home_page.get_by_text(URL_EXPECTED_JARM_RESULT).first
     expect(latest_url_title).to_be_visible()
     expect(latest_url_result).to_be_hidden()
     latest_url_title.click()
