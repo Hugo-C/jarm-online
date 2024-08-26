@@ -316,15 +316,16 @@ export default {
     },
     async shodanCount(hash) {
       this.computingShodanResultCount = true;
-      const path = `https://api.shodan.io/shodan/host/count?query=ssl.jarm:${hash}`;
-      let result;
+      const path = `/api/v1/shodan-host-count?jarm_hash=${hash}`;
+      let result = 0;
       try {
         const res = await axios.get(path);
-        result = res.total
-        this.computingShodanResultCount = false;
+        result = res.data.total
+        console.log(result)
       } catch (error) {
         console.log(error)  // locally we get a CORS error
       }
+      this.computingShodanResultCount = false;
       return result;
     },
     async fetchLastScans() {
