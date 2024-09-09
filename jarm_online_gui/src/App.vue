@@ -3,7 +3,7 @@
     <title>Jarm online</title>
     <meta name="description" content="Compute jarm hash online with this cybersecurity tool. List of malicious hashes included. Disclaimer: results are saved in database">
   </Head>
-  <MainPage/>
+  <MainPage />
 </template>
 
 <script>

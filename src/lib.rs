@@ -14,6 +14,7 @@ use rocket::serde::json::Json;
 use rust_jarm::Jarm;
 use serde::Serialize;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use reqwest::Url;
 use rocket::fairing::AdHoc;
 use rocket::response::status::Custom;
 use rocket::http::Status;
@@ -25,6 +26,7 @@ use rocket_db_pools::deadpool_redis::redis::AsyncCommands;
 
 pub const DEFAULT_SCAN_TIMEOUT_IN_SECONDS: u64 = 15;
 pub const REDIS_LAST_SCAN_LIST_KEY: &str = "redis_last_scan_list_key";
+pub const SHODAN_HOST_COUNT_URL: &str = "https://api.shodan.io/shodan/host/count";
 
 pub const LAST_SCAN_SIZE_RETURNED: isize = 10;
 
@@ -67,6 +69,11 @@ struct LastScanListResponse {
 #[derive(Serialize)]
 struct TrancoOverlapResponse {
     overlapping_domains: Vec<TrancoRankedDomain>,
+}
+
+#[derive(Serialize)]
+struct ShodanHostCountResponse {
+    total: u64,
 }
 
 pub fn scan_timeout_in_seconds() -> u64 {
@@ -132,6 +139,23 @@ async fn tranco_overlap(redis_client: Connection<Db>, jarm_hash: String) -> Resu
     Ok(Json(TrancoOverlapResponse { overlapping_domains }))
 }
 
+#[get("/?<jarm_hash>")]
+async fn shodan_host_count(jarm_hash: String) -> Json<ShodanHostCountResponse> {
+    let shodan_api_key = env::var("SHODAN_API_KEY").unwrap_or_default();
+    let query_param = format!("ssl.jarm:{jarm_hash}");
+    let url = Url::parse_with_params(SHODAN_HOST_COUNT_URL,&[
+        ("query", query_param),
+        ("key", shodan_api_key),
+    ]).unwrap();
+    let client = reqwest::Client::new();
+    let response = client.get(url)
+        .header("Accept", "application/json")
+        .send().await.unwrap();
+    let json_response = response.json::<serde_json::Value>().await.unwrap();
+    let total = json_response["total"].as_u64().unwrap();
+    Json(ShodanHostCountResponse { total })
+}
+
 fn build_error_json(jarm_error: JarmError) -> Json<JarmResponse> {
     // error_message is a debug view of a an unknown error, to be improved.
     let (error_type, error_message) = match jarm_error {
@@ -158,6 +182,7 @@ pub fn build_rocket_without_tranco_initialisation() -> Rocket<Build> {
         .mount("/jarm", routes![jarm])
         .mount("/last-scans", routes![last_scans])
         .mount("/tranco-overlap", routes![tranco_overlap])
+        .mount("/shodan-host-count", routes![shodan_host_count])
         .attach(Db::init())
 }
 
