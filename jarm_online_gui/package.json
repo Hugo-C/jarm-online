@@ -20,7 +20,7 @@
     "vuetify": "^3.3"
   },
   "devDependencies": {
-    "@codecov/vite-plugin": "^0.0.1-beta.10",
+    "@codecov/vite-plugin": "^1.0",
     "@sentry/vite-plugin": "^2.7",
     "@vitejs/plugin-vue": "^5",
     "eslint": "^9.6.0",

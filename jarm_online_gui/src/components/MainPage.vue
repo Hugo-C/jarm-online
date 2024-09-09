@@ -3,30 +3,31 @@
         rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.3/gh-fork-ribbon.min.css"/>
+        href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.3/gh-fork-ribbon.min.css">
   <a id="darkRibbon" class="github-fork-ribbon right-top" href="https://github.com/Hugo-C/jarm-online"
      data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
   <v-layout>
     <v-main>
-      <form class="searchBarDiv" @submit="onSubmit">
+      <form class="searchBarDiv"
+            @submit="onSubmit">
         <v-text-field
-            variant="solo-inverted"
-            label="Compute JARM hash"
-            placeholder="8.8.8.8 | host.com/path"
-            prepend-inner-icon="search"
-            autofocus
-            loading
-            @click:prepend-inner="onSubmit"
-            v-model="inputUrl"
+          variant="solo-inverted"
+          label="Compute JARM hash"
+          placeholder="8.8.8.8 | host.com/path"
+          prepend-inner-icon="search"
+          autofocus
+          loading
+          v-model="inputUrl"
+          @click:prepend-inner="onSubmit"
         >
           <template v-slot:loader>
             <v-progress-linear
-                :active="computingJarmHash"
-                color="secondary"
-                rounded
-                height="5"
-                indeterminate
-            ></v-progress-linear>
+              :active="computingJarmHash"
+              color="secondary"
+              rounded
+              height="5"
+              indeterminate
+            />
           </template>
         </v-text-field>
         <p id="disclaimerLine">
@@ -39,7 +40,7 @@
           <div class="hashDisplay">
             <v-card variant="outlined" class="mx-auto pa-5" width="70%">
               JARM hash is: <b size="large">{{ jarmHashResult.hash }}</b>
-              <v-btn @click="copy" variant="text" prepend-icon="content_copy" class="ml-2" size="small" stacked>
+              <v-btn variant="text" prepend-icon="content_copy" class="ml-2" size="small" stacked @click="copy" >
                 Copy Me
                 <v-tooltip :open-on-hover="false" :open-on-click="true" :no-click-animation="true" text="Copied!"
                            activator="parent"/>
@@ -69,18 +70,18 @@
           <v-chip label variant="elevated" color="primary">No match found</v-chip>
         </span>
                 <v-divider
-                    vertical
-                    color="info"
-                    :thickness="2"
-                    class="ma-1 border-opacity-100"
+                  vertical
+                  color="info"
+                  :thickness="2"
+                  class="ma-1 border-opacity-100"
                 ></v-divider>
                 Known malicious malware family:
                 <a href="https://github.com/Hugo-C/jarm-online" target="_blank" rel="noopener noreferrer">
                   <v-chip label size="small" class="ma-1" variant="elevated" color="bg-surface-variant">Not yet
                     implemented
                     <v-tooltip
-                        text="Star the github repo to see new releases in your feed"
-                        location="bottom" activator="parent"/>
+                      text="Star the github repo to see new releases in your feed"
+                      location="bottom" activator="parent" />
                   </v-chip>
                 </a>
               </div>
@@ -89,21 +90,20 @@
                   <v-expansion-panel-title class="d-flex justify-center bg-surface-variant">
                     <span class="pa-2">Shodan</span>
                     <v-progress-linear v-if="computingShodanResultCount" indeterminate color="primary"
-                                       :absolute="true"></v-progress-linear>
-                    <v-chip v-else label variant="elevated" color="primary">{{
-                        this.jarmHashResult.shodanResultCount
-                      }}
+                                       :absolute="true" />
+                    <v-chip v-else label variant="elevated" color="primary">
+                      {{ this.jarmHashResult.shodanResultCount }}
                     </v-chip>
                   </v-expansion-panel-title>
                   <v-expansion-panel-text>
                     <a :href="shodanSearchLink" target="_blank" rel="noopener noreferrer">
                       <v-img :src="shodanImageLink" lazy-src="/shodan_placeholder.png" height="480">
-                        <template v-slot:placeholder>
+                        <template #placeholder>
                           <div class="d-flex align-center justify-center fill-height">
                             <v-progress-circular
-                                color="grey-lighten-4"
-                                indeterminate
-                            ></v-progress-circular>
+                              color="grey-lighten-4"
+                              indeterminate
+                            />
                           </div>
                         </template>
                       </v-img>
@@ -118,24 +118,24 @@
 
       <!-- Latest URLs part -->
       <v-container fill-height class="w-75">
-        <v-divider :thickness="2" class="border-opacity-100" color="info" inset/>
+        <v-divider :thickness="2" class="border-opacity-100" color="info" inset />
         <h4> Latest urls requested</h4>
         <v-progress-circular
-            v-if="lastScans === null"
-            indeterminate
-            color="secondary"
-        ></v-progress-circular>
+          v-if="lastScans === null"
+          indeterminate
+          color="secondary"
+        />
         <v-expansion-panels v-else multiple fill-width>
           <v-slide-y-reverse-transition
-              class="py-0"
-              group
-              tag="v-expansion-panel"
+            class="py-0"
+            group
+            tag="v-expansion-panel"
           >
             <v-expansion-panel
-                v-for="scan in lastScans.slice().reverse()"
-                :key="scan.host"
-                class="ma-1"
-                eager
+              v-for="scan in lastScans.slice().reverse()"
+              :key="scan.host"
+              class="ma-1"
+              eager
             >
               <v-expansion-panel-title>
                 <span class="text-secondary mr-1">{{ scan.port }}</span><span>{{ scan.host }}</span>
@@ -152,7 +152,7 @@
       <v-row justify="center" no-gutters>
         <h5 id="footernote">
           hosted with 💙 on
-          <v-img id="gcpimg" src="gcp.png" height="20" width="20" inline></v-img>
+          <v-img id="gcpimg" src="gcp.png" height="20" width="20" inline />
           <span class="ma-5"> |</span>
           <a href="https://jarm.statuspage.io/" target="_blank" rel="noopener noreferrer">status page</a>
         </h5>
@@ -161,23 +161,23 @@
   </v-layout>
   <!--  Snackbar for notifications-->
   <v-snackbar
-      v-model="this.notification.isDisplayed"
-      :timeout="10000"
-      variant="flat"
-      color="error"
-      :absolute="true"
-      class="ma-5 opacity-100"
-      location="top right"
-      z-index="15000"
-      multi-line
-      vertical
+    v-model="this.notification.isDisplayed"
+    :timeout="10000"
+    variant="flat"
+    color="error"
+    :absolute="true"
+    class="ma-5 opacity-100"
+    location="top right"
+    z-index="15000"
+    multi-line
+    vertical
   >
     <div class="text-subtitle-1 pb-2">{{ notification.title }}</div>
     <p>{{ notification.body }}</p>
-    <template v-slot:actions>
+    <template #actions>
       <v-btn
-          variant="text"
-          @click="notification.clear()"
+        variant="text"
+        @click="notification.clear()"
       >
         Close
       </v-btn>
@@ -321,9 +321,8 @@ export default {
       try {
         const res = await axios.get(path);
         result = res.data.total
-        console.log(result)
       } catch (error) {
-        console.log(error)  // locally we get a CORS error
+        console.log(error)
       }
       this.computingShodanResultCount = false;
       return result;
