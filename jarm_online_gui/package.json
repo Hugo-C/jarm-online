@@ -11,21 +11,21 @@
     "lint-fix": "eslint --fix src"
   },
   "dependencies": {
-    "@sentry/browser": "^7.70",
-    "@sentry/vue": "^7.70",
-    "@unhead/vue": "^1.8.12",
-    "axios": "^1.5",
+    "@sentry/browser": "^8.33",
+    "@sentry/vue": "^8.33",
+    "@unhead/vue": "^1.11",
+    "axios": "^1.7",
     "defang-refang": "^0.0.5",
-    "vue": "^3.3",
+    "vue": "^3.5",
     "vue-clipboard3": "^2.0",
-    "vuetify": "^3.3"
+    "vuetify": "^3.7"
   },
   "devDependencies": {
-    "@codecov/vite-plugin": "^1.0",
-    "@sentry/vite-plugin": "^2.7",
+    "@codecov/vite-plugin": "^1.2",
+    "@sentry/vite-plugin": "^2.22",
     "@vitejs/plugin-vue": "^5",
-    "eslint": "^9.6.0",
-    "eslint-plugin-vue": "^9.27.0",
+    "eslint": "^9.12",
+    "eslint-plugin-vue": "^9.28",
     "vite": "^5"
   },
   "browserslist": [
