@@ -15,6 +15,7 @@
     "@sentry/vue": "^7.70",
     "@unhead/vue": "^1.8.12",
     "axios": "^1.5",
+    "defang-refang": "^0.0.5",
     "vue": "^3.3",
     "vue-clipboard3": "^2.0",
     "vuetify": "^3.3"

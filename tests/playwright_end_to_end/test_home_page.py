@@ -28,6 +28,16 @@ def test_scan_address(home_page: Page):
     tranco_overlap_link = home_page.get_by_role("link", name="1 other matching domains")
     expect(tranco_overlap_link).to_have_attribute("href", f"/api/v1/tranco-overlap?jarm_hash={URL_EXPECTED_JARM_RESULT}")
 
+def test_scan_address_is_refanged(home_page: Page):
+    submit_scan_address_field = home_page.get_by_placeholder(INPUT_PLACEHOLDER)
+    defanged_url = URL_TO_SCAN.replace("http", "hxxp", 1)
+    submit_scan_address_field.fill(defanged_url)
+    submit_scan_address_field.press("Enter")
+
+    # check result
+    result = home_page.get_by_text("Jarm hash is:")
+    expect(result).to_contain_text(URL_EXPECTED_JARM_RESULT)
+
 
 def test_latest_urls(home_page: Page):
     latest_url_header = home_page.get_by_role("heading", name=re.compile("Latest urls .+"))

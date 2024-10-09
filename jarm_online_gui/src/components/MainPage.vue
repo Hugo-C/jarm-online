@@ -188,6 +188,7 @@
 <script>
 import axios from 'axios';
 import useClipboard from 'vue-clipboard3'
+import dr from 'defang-refang';
 
 import {notification} from './notification';
 
@@ -230,6 +231,7 @@ export default {
       evt.preventDefault();
       this.resetJarmHash();
 
+      this.inputUrl = dr.refang(this.inputUrl);
       let hash = await this.lookUpUrl(this.inputUrl);
       this.jarmHashResult.hash = hash;
       if (!hash) {
