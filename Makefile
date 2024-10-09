@@ -4,6 +4,8 @@ run_integration_tests:
 	docker compose -f docker-compose.integration.yml down
 
 run_e2e_tests:
+	docker compose -f docker-compose.playwright.yml build jarm_online_gui
+	docker compose -f docker-compose.playwright.yml build jarm_online_api
 	docker compose -f docker-compose.playwright.yml run pytest_runner --tracing=retain-on-failure --output=/code/tests/playwright-test-results/
 	docker compose -f docker-compose.playwright.yml down
 
