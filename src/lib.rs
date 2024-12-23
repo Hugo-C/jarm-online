@@ -3,6 +3,7 @@ extern crate rocket;
 
 pub mod utils;
 pub mod tranco_top1m;
+mod auth;
 
 use sqlx::FromRow;
 use rocket_db_pools::{Connection, deadpool_redis};
@@ -217,8 +218,7 @@ async fn get_confirmed_ioc_scans(mut sql_client: Connection<SqliteDb>) -> Json<P
 }
 
 #[post("/", data = "<confirmed_ioc_scan>")]
-async fn post_confirmed_ioc_scans(confirmed_ioc_scan: Json<ConfirmedIocScan>, mut sql_client: Connection<SqliteDb>) -> Created<&'static str> {
-    // TODO handle auth with a fixed token (not vulnerable to timing attack)
+async fn post_confirmed_ioc_scans(_token: auth::AuthToken<'_>, confirmed_ioc_scan: Json<ConfirmedIocScan>, mut sql_client: Connection<SqliteDb>) -> Created<&'static str> {
     let confirmed_ioc_scan_id = Uuid::new_v4();
     let _ = sqlx::query("INSERT INTO confirmed_ioc_scan (id, host, port, jarm_hash, scan_timestamp, threat_fox_first_seen, threat_fox_confidence_level, threat_fox_malware) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
         .bind(confirmed_ioc_scan_id.to_string())

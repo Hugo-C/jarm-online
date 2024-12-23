@@ -4,6 +4,7 @@ use std::sync::{Mutex, MutexGuard};
 use std::time::Duration;
 use lazy_static::lazy_static;
 use redis::RedisError;
+use rocket::http::Header;
 use rstest::*;
 use jarm_online::{build_rocket, build_rocket_without_tranco_initialisation};
 use rocket::local::blocking::Client;
@@ -33,8 +34,14 @@ pub fn set_env_var_top1m_path(tranco_top1m_path: &'static Path) {
 }
 
 #[fixture]
+#[once]
+pub fn set_env_var_auth_token() {
+    env::set_var("AUTH_TOKEN", "valid_api_key");
+}
+
+#[fixture]
 #[allow(unused_variables)]
-pub fn rocket_client(set_env_var_top1m_path: ()) -> Client {
+pub fn rocket_client(set_env_var_top1m_path: (), set_env_var_auth_token: ()) -> Client {
     let test_rocket = build_rocket();
     Client::tracked(test_rocket).expect("valid rocket instance")
 }
@@ -44,6 +51,11 @@ pub fn rocket_client(set_env_var_top1m_path: ()) -> Client {
 pub fn rocket_client_without_tranco_init(set_env_var_top1m_path: ()) -> Client {
     let test_rocket = build_rocket_without_tranco_initialisation();
     Client::tracked(test_rocket).expect("valid rocket instance")
+}
+
+#[allow(dead_code)]  // used in tests
+pub fn auth_header() -> Header<'static> {
+    Header::new("Authorization", "Token valid_api_key")
 }
 
 #[fixture]

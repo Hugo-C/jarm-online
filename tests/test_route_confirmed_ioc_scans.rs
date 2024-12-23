@@ -3,15 +3,63 @@ mod common;
 
 #[cfg(test)]
 mod test_route_confirmed_ioc_scans {
-    use crate::common::clean_sqlite;
+    use crate::common::auth_header;
+use crate::common::clean_sqlite;
     use crate::common::rocket_client;
-    use rocket::http::Status;
+    use rocket::http::{Header, Status};
     use rocket::local::blocking::Client;
     use rocket::serde::json::serde_json::{json, Map};
     use rocket::serde::json::Value;
     use rocket::serde::json::Value::Null;
     use rstest::*;
     use std::sync::MutexGuard;
+
+    #[rstest]
+    fn add_confirmed_ioc_scans_without_auth_returns_http_401(
+        _clean_sqlite: MutexGuard<'_, ()>,
+        rocket_client: Client,
+    ) {
+        let body = json!({
+            "host": "some.host.com",
+            "port": "443",
+            "jarm_hash": "abcabc",
+            "scan_timestamp": 1732661308,
+            "threat_fox_first_seen": 1700061308,
+            "threat_fox_confidence_level": 25,
+            "threat_fox_malware": "cobalt",
+        });
+
+        let response = rocket_client
+            .post("/confirmed-ioc-scans")
+            .json(&body)
+            .dispatch();
+
+        assert_eq!(response.status(), Status::Unauthorized);
+    }
+
+    #[rstest]
+    fn add_confirmed_ioc_scans_with_invalid_auth_returns_http_401(
+        _clean_sqlite: MutexGuard<'_, ()>,
+        rocket_client: Client,
+    ) {
+        let body = json!({
+            "host": "some.host.com",
+            "port": "443",
+            "jarm_hash": "abcabc",
+            "scan_timestamp": 1732661308,
+            "threat_fox_first_seen": 1700061308,
+            "threat_fox_confidence_level": 25,
+            "threat_fox_malware": "cobalt",
+        });
+
+        let response = rocket_client
+            .post("/confirmed-ioc-scans")
+            .json(&body)
+            .header(Header::new("Authorization", "Token invalid token"))
+            .dispatch();
+
+        assert_eq!(response.status(), Status::Unauthorized);
+    }
 
     #[rstest]
     fn add_confirmed_ioc_scans_returns_http_201(
@@ -31,6 +79,7 @@ mod test_route_confirmed_ioc_scans {
         let response = rocket_client
             .post("/confirmed-ioc-scans")
             .json(&body)
+            .header(auth_header())
             .dispatch();
 
         assert_eq!(response.status(), Status::Created);
@@ -54,6 +103,7 @@ mod test_route_confirmed_ioc_scans {
         rocket_client
             .post("/confirmed-ioc-scans")
             .json(&confirmed_ioc_scan)
+            .header(auth_header())
             .dispatch();
 
         let response = rocket_client.get("/confirmed-ioc-scans").dispatch();
@@ -95,6 +145,7 @@ mod test_route_confirmed_ioc_scans {
         rocket_client
             .post("/confirmed-ioc-scans")
             .json(&confirmed_ioc_scan1)
+            .header(auth_header())
             .dispatch();
 
         let confirmed_ioc_scan2 = json!({
@@ -110,6 +161,7 @@ mod test_route_confirmed_ioc_scans {
         rocket_client
             .post("/confirmed-ioc-scans")
             .json(&confirmed_ioc_scan2)
+            .header(auth_header())
             .dispatch();
 
         let response = rocket_client.get("/confirmed-ioc-scans").dispatch();

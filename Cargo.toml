@@ -22,6 +22,7 @@ async-std = { version = "1.12", features = ["attributes", "tokio1"] }
 reqwest = { version = "^0.12.2", features = ["stream"] }
 tempfile = "3.10.1"
 sqlx = { version = "^0.7", features = [ "macros" ] }
+constant_time_eq = "0.3.1"
 
 [dependencies.rocket_db_pools]
 version = "0.2.0"
