@@ -21,10 +21,17 @@ env_logger = "0.11"
 async-std = { version = "1.12", features = ["attributes", "tokio1"] }
 reqwest = { version = "^0.12.2", features = ["stream"] }
 tempfile = "3.10.1"
+sqlx = { version = "^0.7", features = [ "macros" ] }
 
 [dependencies.rocket_db_pools]
 version = "0.2.0"
-features = ["deadpool_redis"]
+features = ["deadpool_redis", "sqlx_sqlite"]
+
+[dependencies.uuid]
+version = "1.11.0"
+features = [
+    "v4",                # Lets you generate random UUIDs
+]
 
 [dev-dependencies]
 rstest = "0.23.0"

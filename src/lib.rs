@@ -4,6 +4,7 @@ extern crate rocket;
 pub mod utils;
 pub mod tranco_top1m;
 
+use sqlx::FromRow;
 use rocket_db_pools::{Connection, deadpool_redis};
 use crate::tranco_top1m::{TrancoTop1M};
 use crate::tranco_top1m::RankedDomain as TrancoRankedDomain;
@@ -16,13 +17,17 @@ use serde::Serialize;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use reqwest::Url;
 use rocket::fairing::AdHoc;
-use rocket::response::status::Custom;
+use rocket::response::status::{Created, Custom};
 use rocket::http::Status;
 use rocket::serde::Deserialize;
 use rocket::serde::json::serde_json;
 use rust_jarm::error::JarmError;
-use rocket_db_pools::{Database};
+use rocket_db_pools::{sqlx, Database};
 use rocket_db_pools::deadpool_redis::redis::AsyncCommands;
+use rocket_db_pools::sqlx::Row;
+use sqlx::migrate;
+use sqlx::sqlite::SqliteRow;
+use uuid::Uuid;
 
 pub const DEFAULT_SCAN_TIMEOUT_IN_SECONDS: u64 = 15;
 pub const REDIS_LAST_SCAN_LIST_KEY: &str = "redis_last_scan_list_key";
@@ -34,6 +39,52 @@ pub const LAST_SCAN_SIZE_RETURNED: isize = 10;
 #[database("redis_db")]
 pub struct Db(deadpool_redis::Pool);
 
+#[derive(Database)]
+#[database("sqlite_db")]
+struct SqliteDb(sqlx::SqlitePool);
+
+#[derive(Serialize, Deserialize, Debug)]
+struct ConfirmedIocScan {  // Confirmed in the sense it comes from a reliable source
+    id: Option<Uuid>,
+    host: String,
+    port: String,
+    jarm_hash: String,
+    scan_timestamp: i64,  // epoch timestamp
+    threat_fox_first_seen: i64,
+    threat_fox_confidence_level: u8,  // between 1 and 100
+    threat_fox_malware: String,
+}
+
+impl<'r> FromRow<'r, SqliteRow> for ConfirmedIocScan {
+    fn from_row(row: &'r SqliteRow) -> Result<Self, sqlx::Error> {
+        let id_as_string: String = row.try_get("id")?;
+        let id = Uuid::parse_str(id_as_string.as_str()).unwrap();
+        let host: String = row.try_get("host")?;
+        let port: String = row.try_get("port")?;
+        let jarm_hash: String = row.try_get("jarm_hash")?;
+        let scan_timestamp: i64 = row.try_get("scan_timestamp")?;
+        let threat_fox_first_seen: i64 = row.try_get("threat_fox_first_seen")?;
+        let threat_fox_confidence_level: u8 = row.try_get("threat_fox_confidence_level")?;
+        let threat_fox_malware: String = row.try_get("threat_fox_malware")?;
+
+        Ok(ConfirmedIocScan {
+            id: Some(id),
+            host,
+            port,
+            jarm_hash,
+            scan_timestamp,
+            threat_fox_first_seen,
+            threat_fox_confidence_level,
+            threat_fox_malware,
+        })
+    }
+}
+
+#[derive(Serialize)]
+struct PaginatedConfirmedIocScanResponse {
+    results: Vec<ConfirmedIocScan>,
+    next: Option<String>,
+}
 
 #[derive(Serialize)]
 struct ErrorResponse {
@@ -156,6 +207,32 @@ async fn shodan_host_count(jarm_hash: String) -> Json<ShodanHostCountResponse> {
     Json(ShodanHostCountResponse { total })
 }
 
+#[get("/")]
+async fn get_confirmed_ioc_scans(mut sql_client: Connection<SqliteDb>) -> Json<PaginatedConfirmedIocScanResponse> {
+    let confirmed_ioc_scans = sqlx::query_as::<_, ConfirmedIocScan>("SELECT * FROM confirmed_ioc_scan").fetch_all(&mut **sql_client).await.unwrap();
+    Json(PaginatedConfirmedIocScanResponse {
+        results: confirmed_ioc_scans,
+        next: None,  // placeholder
+    })
+}
+
+#[post("/", data = "<confirmed_ioc_scan>")]
+async fn post_confirmed_ioc_scans(confirmed_ioc_scan: Json<ConfirmedIocScan>, mut sql_client: Connection<SqliteDb>) -> Created<&'static str> {
+    // TODO handle auth with a fixed token (not vulnerable to timing attack)
+    let confirmed_ioc_scan_id = Uuid::new_v4();
+    let _ = sqlx::query("INSERT INTO confirmed_ioc_scan (id, host, port, jarm_hash, scan_timestamp, threat_fox_first_seen, threat_fox_confidence_level, threat_fox_malware) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+        .bind(confirmed_ioc_scan_id.to_string())
+        .bind(&confirmed_ioc_scan.host)
+        .bind(&confirmed_ioc_scan.port)
+        .bind(&confirmed_ioc_scan.jarm_hash)
+        .bind(confirmed_ioc_scan.scan_timestamp)
+        .bind(confirmed_ioc_scan.threat_fox_first_seen)
+        .bind(confirmed_ioc_scan.threat_fox_confidence_level)
+        .bind(&confirmed_ioc_scan.threat_fox_malware)
+        .execute(&mut **sql_client).await.unwrap();
+    Created::new("https://jarm.online/api/v1/confirmed-ioc-scans")
+}
+
 fn build_error_json(jarm_error: JarmError) -> Json<JarmResponse> {
     // error_message is a debug view of a an unknown error, to be improved.
     let (error_type, error_message) = match jarm_error {
@@ -177,13 +254,29 @@ fn build_error_json(jarm_error: JarmError) -> Json<JarmResponse> {
     })
 }
 
+async fn run_migrations(rocket: Rocket<Build>) -> fairing::Result {
+  match SqliteDb::fetch(&rocket) {
+    Some(db) => match migrate!("./src/db/migrations").run(&**db).await {
+      Ok(_) => Ok(rocket),
+      Err(e) => {
+        error!("Failed to run database migrations: {}", e);
+        Err(rocket)
+      }
+    },
+    None => Err(rocket),
+  }
+}
+
 pub fn build_rocket_without_tranco_initialisation() -> Rocket<Build> {
     rocket::build()
         .mount("/jarm", routes![jarm])
         .mount("/last-scans", routes![last_scans])
         .mount("/tranco-overlap", routes![tranco_overlap])
         .mount("/shodan-host-count", routes![shodan_host_count])
+        .mount("/confirmed-ioc-scans", routes![get_confirmed_ioc_scans, post_confirmed_ioc_scans])
         .attach(Db::init())
+        .attach(SqliteDb::init())
+        .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
 }
 
 pub fn build_rocket() -> Rocket<Build> {

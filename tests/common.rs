@@ -12,10 +12,12 @@ use rocket::local::blocking::Client;
 pub const DUMMY_SERVER_JARM_HASH: &str = "21d19d00021d21d00021d19d21d21d1a46380b04d662f0848f508dd171125d";
 
 pub const REDIS_URL: &str = "redis://127.0.0.1/";
+pub const SQLITE_PATH: &str = "db.sqlite";  // should be the same as the one defined in Rocket.toml
 
 
 lazy_static! {
     static ref REDIS_MUTEX: Mutex<()> = Mutex::default();  // restrict redis parallel access
+    static ref SQLITE_MUTEX: Mutex<()> = Mutex::default();  // restrict sqlite parallel access
 }
 
 #[fixture]
@@ -63,11 +65,21 @@ pub fn clean_redis<'a>() -> MutexGuard<'a, ()> {
             },
         }
     }
-    return redis_lock;
+    redis_lock
 }
 
 fn clean_redis_commands(client: &redis::Client) -> Result<(), RedisError> {
     let mut con = client.get_connection()?;
     let _:() = redis::cmd("FLUSHDB").query(&mut con)?;
     Ok(())
+}
+
+#[fixture]
+pub fn clean_sqlite<'a>() -> MutexGuard<'a, ()> {
+    let sqlite_lock = SQLITE_MUTEX.lock().unwrap_or_else(|e| {
+        SQLITE_MUTEX.clear_poison();
+        e.into_inner()  // Prevent a failing test to fail the tests that follow
+    });
+    std::fs::remove_file(SQLITE_PATH).unwrap();
+    sqlite_lock
 }

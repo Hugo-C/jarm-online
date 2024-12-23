@@ -56,6 +56,8 @@ GET api/v1/last-scans
 
 The returned list is ordered by oldest scans first. No pagination is proposed.
 
+*TODO add doc!*
+
 ## Images statistics
 
 |                                image                                 |                                                                                                                                                        RAM usage                                                                                                                                                        |                                                                             image size (compressed)                                                                              |
