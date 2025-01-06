@@ -92,6 +92,8 @@ pub fn clean_sqlite<'a>() -> MutexGuard<'a, ()> {
         SQLITE_MUTEX.clear_poison();
         e.into_inner()  // Prevent a failing test to fail the tests that follow
     });
-    std::fs::remove_file(SQLITE_PATH).unwrap();
+    match std::fs::remove_file(SQLITE_PATH) {
+        _ => (),  // file is not always created
+    }
     sqlite_lock
 }
