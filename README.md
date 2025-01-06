@@ -56,7 +56,22 @@ GET api/v1/last-scans
 
 The returned list is ordered by oldest scans first. No pagination is proposed.
 
-*TODO add doc!*
+### Retrieve confirmed malicious host
+
+````http request
+GET api/v1/confirmed-ioc-scans
+````
+
+The returned list is paginated.
+
+### Submit confirmed malicious host
+
+````http request
+Post api/v1/confirmed-ioc-scans
+````
+
+🟠 endpoint require authentication.  
+No response will be returned. Insertion is visible instantly.
 
 ## Images statistics
 
