@@ -4,7 +4,7 @@ mod common;
 #[cfg(test)]
 mod test_route_confirmed_ioc_scans {
     use crate::common::auth_header;
-use crate::common::clean_sqlite;
+    use crate::common::clean_sqlite;
     use crate::common::rocket_client;
     use rocket::http::{Header, Status};
     use rocket::local::blocking::Client;
