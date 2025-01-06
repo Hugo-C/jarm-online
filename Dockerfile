@@ -29,7 +29,8 @@ RUN touch /app/project/src/main.rs && cargo build $BUILD_OPTIONS -Z unstable-opt
 FROM alpine:3 AS production-stage
 RUN mkdir /app
 COPY --from=build-stage /app/dist/jarm_online /app
-COPY --from=build-stage /app/project/Rocket.toml /
+COPY --from=build-stage /app/project/Rocket.toml /app
 RUN chown -R 1001:1001 /app
 USER 1001
+WORKDIR /app
 CMD /app/jarm_online

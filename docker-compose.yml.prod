@@ -25,6 +25,8 @@ services:
       - ROCKET_SENTRY_TRACES_SAMPLE_RATE=1.0
       - TRANCO_TOP1M_S3_URL=https://storage.googleapis.com/tranco-jarm/jarm-tranco-top-1m.csv
       - AUTH_TOKEN=${AUTH_TOKEN}
+    volumes:
+      - ./sqlite_data:/app/sqlite_data
     restart: unless-stopped
     depends_on:
       - redis
