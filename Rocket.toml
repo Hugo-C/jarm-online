@@ -11,3 +11,6 @@ address = "0.0.0.0"
 
 [default.databases.redis_db]
 url = "redis://localhost"
+
+[default.databases.sqlite_db]
+url = "sqlite_data/db.sqlite"

@@ -1,4 +1,4 @@
-FROM rust:1.81-bullseye AS build-stage
+FROM rust:1.82-bullseye AS build-stage
 
 ARG BUILD_TARGET="x86_64-unknown-linux-musl"
 ARG BUILD_OPTIONS="--release --target $BUILD_TARGET"
@@ -29,7 +29,8 @@ RUN touch /app/project/src/main.rs && cargo build $BUILD_OPTIONS -Z unstable-opt
 FROM alpine:3 AS production-stage
 RUN mkdir /app
 COPY --from=build-stage /app/dist/jarm_online /app
-COPY --from=build-stage /app/project/Rocket.toml /
+COPY --from=build-stage /app/project/Rocket.toml /app
 RUN chown -R 1001:1001 /app
 USER 1001
+WORKDIR /app
 CMD /app/jarm_online

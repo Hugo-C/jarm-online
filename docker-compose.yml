@@ -17,6 +17,8 @@ services:
       - ROCKET_PROFILE=release
       - ROCKET_DATABASES={redis_db={url="redis://redis"}}
       - ROCKET_SENTRY_DSN=${ROCKET_SENTRY_DSN:-https://123@deactivated.io/123}
+    volumes:
+      - ./sqlite_data:/app/sqlite_data
     ports:
       - "8000:8000"
 
