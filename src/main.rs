@@ -27,8 +27,8 @@ impl Fairing for CORS {
     }
 }
 
-#[rocket::main]
-async fn main() -> Result<(), rocket::Error> {
+#[rocket::launch]
+async fn rocket() -> _ {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let rocket_instance = build_rocket();
     // Get the default configured sample rate from `Rocket.toml`
@@ -60,7 +60,4 @@ async fn main() -> Result<(), rocket::Error> {
     rocket_instance
         .attach(CORS)
         .attach(rocket_sentry)
-        .launch()
-        .await?;
-    Ok(())
 }
