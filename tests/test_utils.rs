@@ -12,7 +12,7 @@ mod test_utils {
     #[test]
     fn scan_timeout_in_seconds_is_correct_default() {
         let _mutex = ENV_VAR_MUTEX.lock().unwrap();  // take the mutex and release it at the end of the function
-        env::remove_var("SCAN_TIMEOUT_IN_SECONDS");
+        unsafe { env::remove_var("SCAN_TIMEOUT_IN_SECONDS") };
 
         let timeout = scan_timeout_in_seconds();
 
@@ -22,7 +22,7 @@ mod test_utils {
     #[test]
     fn scan_timeout_in_seconds_can_be_changed() {
         let _mutex = ENV_VAR_MUTEX.lock().unwrap();
-        env::set_var("SCAN_TIMEOUT_IN_SECONDS", "168");
+        unsafe { env::set_var("SCAN_TIMEOUT_IN_SECONDS", "168") };
 
         let timeout = scan_timeout_in_seconds();
 
@@ -32,10 +32,10 @@ mod test_utils {
     #[test]
     fn scan_timeout_in_seconds_fail_on_invalid_values() {
         let _mutex = ENV_VAR_MUTEX.lock().unwrap();
-        env::set_var("SCAN_TIMEOUT_IN_SECONDS", "-1");
+        unsafe { env::set_var("SCAN_TIMEOUT_IN_SECONDS", "-1") };
 
         let result = std::panic::catch_unwind(|| scan_timeout_in_seconds());
         assert!(result.is_err());
-        env::remove_var("SCAN_TIMEOUT_IN_SECONDS");  // cleanup the env var
+        unsafe { env::remove_var("SCAN_TIMEOUT_IN_SECONDS") };  // cleanup the env var
     }
 }
