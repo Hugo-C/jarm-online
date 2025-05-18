@@ -31,16 +31,18 @@ pub fn tranco_top1m_path() -> &'static Path {
 #[fixture]
 #[once]
 pub fn set_env_var_top1m_path(tranco_top1m_path: &'static Path) {
-    env::set_var(
-        "FORCE_TRANCO_TOP1M_RAW_DATA_PATH",
-        tranco_top1m_path.to_str().expect("valid path"),
-    );
+    unsafe {
+        env::set_var(
+            "FORCE_TRANCO_TOP1M_RAW_DATA_PATH",
+            tranco_top1m_path.to_str().expect("valid path"),
+        );
+    }
 }
 
 #[fixture]
 #[once]
 pub fn set_env_var_auth_token() {
-    env::set_var("AUTH_TOKEN", "valid_api_key");
+    unsafe { env::set_var("AUTH_TOKEN", "valid_api_key") };
 }
 
 #[fixture]

@@ -27,8 +27,8 @@ impl Fairing for CORS {
     }
 }
 
-#[rocket::main]
-async fn main() -> Result<(), rocket::Error> {
+#[rocket::launch]
+async fn rocket() -> _ {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let rocket_instance = build_rocket();
     // Get the default configured sample rate from `Rocket.toml`
@@ -42,16 +42,17 @@ async fn main() -> Result<(), rocket::Error> {
         Err(_) => last_scans_sample_rate_default,
     };
     let traces_sampler = move |ctx: &TransactionContext| -> f32 {
-        match ctx.name() {
-            "GET /last-scans" => {
-                if default_rate == 0. {
-                    0.  // Allow to disable Sentry completely
-                } else {
-                    last_scans_sample_rate
-                }
-            },
-            _ => default_rate,
-        }
+        1.
+        // match ctx.name() {
+        //     "GET /last-scans" => {
+        //         if default_rate == 0. {
+        //             0.  // Allow to disable Sentry completely
+        //         } else {
+        //             last_scans_sample_rate
+        //         }
+        //     },
+        //     _ => default_rate,
+        // }
     };
     let rocket_sentry = RocketSentry::builder()
         .traces_sampler(Arc::new(traces_sampler))
@@ -60,7 +61,4 @@ async fn main() -> Result<(), rocket::Error> {
     rocket_instance
         .attach(CORS)
         .attach(rocket_sentry)
-        .launch()
-        .await?;
-    Ok(())
 }
