@@ -11,9 +11,9 @@
     "lint-fix": "eslint --fix src"
   },
   "dependencies": {
-    "@sentry/browser": "^8.33",
-    "@sentry/vue": "^8.33",
-    "@unhead/vue": "^1.11",
+    "@sentry/browser": "^9.19",
+    "@sentry/vue": "^9.19",
+    "@unhead/vue": "^2.0",
     "axios": "^1.7",
     "defang-refang": "^0.0.5",
     "vue": "^3.5",
@@ -22,11 +22,11 @@
   },
   "devDependencies": {
     "@codecov/vite-plugin": "^1.2",
-    "@sentry/vite-plugin": "^2.22",
+    "@sentry/vite-plugin": "^3.4",
     "@vitejs/plugin-vue": "^5",
     "eslint": "^9.12",
-    "eslint-plugin-vue": "^9.28",
-    "vite": "^5"
+    "eslint-plugin-vue": "^10.1",
+    "vite": "^6"
   },
   "browserslist": [
     "> 1%",
