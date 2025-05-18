@@ -42,16 +42,17 @@ async fn rocket() -> _ {
         Err(_) => last_scans_sample_rate_default,
     };
     let traces_sampler = move |ctx: &TransactionContext| -> f32 {
-        match ctx.name() {
-            "GET /last-scans" => {
-                if default_rate == 0. {
-                    0.  // Allow to disable Sentry completely
-                } else {
-                    last_scans_sample_rate
-                }
-            },
-            _ => default_rate,
-        }
+        1.
+        // match ctx.name() {
+        //     "GET /last-scans" => {
+        //         if default_rate == 0. {
+        //             0.  // Allow to disable Sentry completely
+        //         } else {
+        //             last_scans_sample_rate
+        //         }
+        //     },
+        //     _ => default_rate,
+        // }
     };
     let rocket_sentry = RocketSentry::builder()
         .traces_sampler(Arc::new(traces_sampler))
