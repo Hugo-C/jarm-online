@@ -1,6 +1,6 @@
 import {createApp} from 'vue'
 
-import { createHead } from '@unhead/vue'
+import { createHead } from '@unhead/vue/client'
 import * as Sentry from "@sentry/vue"
 import App from './App.vue'
 import createVuetify from "./plugins/vuetify";

@@ -10,27 +10,46 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  rust_changed:
+    runs-on: ubuntu-latest
+    name: "Check is rust related files were changed"
+    outputs:
+      changes_detected: ${{ steps.filter.outputs.changes_detected }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            changes_detected:
+              - '**.rs'
+              - 'cargo.lock'
+              - 'cargo.toml'
+              - 'Dockerfile'
+              - '.github/workflows/rust.yml'
   test:
     runs-on: ubuntu-latest
+    needs: rust_changed
+    if: needs.rust_changed.outputs.changes_detected == 'true'
     steps:
-    - uses: actions/checkout@v4
-    - id: rustcache
-      uses: Swatinem/rust-cache@v2
-    - name: Build
-      run: cargo build
-    - name: Run tests
-      run: cargo test --verbose
-    - name: Run integration tests
-      run: |
-        docker compose -f docker-compose.integration.yml up -d redis playwright_dummy_server
-        cargo test -- --ignored
-        docker compose -f docker-compose.integration.yml down
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        components: clippy
-        override: true
-    - uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --all-features
+      - uses: actions/checkout@v4
+      - id: rustcache
+        uses: Swatinem/rust-cache@v2
+      - name: Build
+        run: cargo build
+      - name: Run tests
+        run: cargo test --verbose
+      - name: Run integration tests
+        run: |
+          docker compose -f docker-compose.integration.yml up -d redis playwright_dummy_server
+          cargo test -- --ignored
+          docker compose -f docker-compose.integration.yml down
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          components: clippy
+          override: true
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features
