@@ -26,6 +26,7 @@ use rust_jarm::error::JarmError;
 use rocket_db_pools::{sqlx, Database};
 use rocket_db_pools::deadpool_redis::redis::AsyncCommands;
 use rocket_db_pools::sqlx::Row;
+use rocket_sentry::{wrap_in_span, SentryGuard};
 use sqlx::migrate;
 use sqlx::sqlite::SqliteRow;
 use uuid::Uuid;
@@ -136,7 +137,7 @@ pub fn scan_timeout_in_seconds() -> u64 {
 }
 
 #[get("/?<host>&<port>")]
-async fn jarm(host: String, port: Option<String>, mut redis_client: Connection<Db>) -> Json<JarmResponse> {
+async fn jarm(host: String, port: Option<String>, mut redis_client: Connection<Db>, sentry: SentryGuard<'_>) -> Json<JarmResponse> {
     let _port = port.unwrap_or_else(|| "443".to_string());
     let _host = utils::sanitize_host(&host);
     let jarm_hash = {
@@ -145,7 +146,10 @@ async fn jarm(host: String, port: Option<String>, mut redis_client: Connection<D
             _port.clone(),
         );
         jarm_scan.timeout = Duration::from_secs(scan_timeout_in_seconds());
-        match jarm_scan.hash() {
+        let jarm_scan_hash = wrap_in_span(&sentry, "fingerprinting", "computing jarm hash", || {
+            jarm_scan.hash()
+        });
+        match jarm_scan_hash {
             Ok(hash) => hash,
             Err(jarm_error) => {
                 return build_error_json(jarm_error);
@@ -161,19 +165,29 @@ async fn jarm(host: String, port: Option<String>, mut redis_client: Connection<D
         .duration_since(UNIX_EPOCH)
         .expect("Time went backwards");
     let epoch = since_the_epoch.as_secs();
-    let _: () = redis_client.zadd(REDIS_LAST_SCAN_LIST_KEY, serialized_scan, epoch).await.unwrap();
+    wrap_in_span(&sentry, "redis", "saving jarm hash in redis last scan", async|| {
+        let _: () = redis_client.zadd(REDIS_LAST_SCAN_LIST_KEY, serialized_scan, epoch).await.unwrap();
+    }).await;
 
-    let last_scan_count: isize = redis_client.zcount(REDIS_LAST_SCAN_LIST_KEY, "-inf", "+inf").await.unwrap();
+
+    let last_scan_count: isize = wrap_in_span(&sentry, "redis", "fetching number of saved results", async|| {
+        redis_client.zcount(REDIS_LAST_SCAN_LIST_KEY, "-inf", "+inf").await.unwrap()
+    }).await;
+
     if last_scan_count > LAST_SCAN_SIZE_RETURNED {  // pop the results above the defined limit
         let pop_number = last_scan_count - LAST_SCAN_SIZE_RETURNED;
-        let _: () = redis_client.zpopmin(REDIS_LAST_SCAN_LIST_KEY, pop_number).await.unwrap();
+        wrap_in_span(&sentry, "redis", "fetching number of saved results", async|| {
+            let _: () = redis_client.zpopmin(REDIS_LAST_SCAN_LIST_KEY, pop_number).await.unwrap();
+        }).await;
     }
     Json(JarmResponse { host: scan.host, port: scan.port, jarm_hash: scan.jarm_hash, error: None })
 }
 
 #[get("/")]
-async fn last_scans(mut redis_client: Connection<Db>) -> Json<LastScanListResponse> {
-    let redis_last_scans: Vec<String> = redis_client.zrangebyscore(REDIS_LAST_SCAN_LIST_KEY, "-inf", "+inf").await.unwrap();
+async fn last_scans(mut redis_client: Connection<Db>, sentry: SentryGuard<'_>) -> Json<LastScanListResponse> {
+    let redis_last_scans: Vec<String> = wrap_in_span(&sentry, "redis", "fetching number of saved results", async|| {
+        redis_client.zrangebyscore(REDIS_LAST_SCAN_LIST_KEY, "-inf", "+inf").await.unwrap()
+    }).await;
     let mut last_scans = vec![];
     for scan in redis_last_scans {
         last_scans.push(serde_json::from_str(&scan).unwrap());

@@ -1,3 +1,5 @@
+use rocket::Build;
+use rocket::Rocket;
 use std::env;
 use std::sync::Arc;
 use ::rocket_sentry::RocketSentry;
@@ -28,7 +30,7 @@ impl Fairing for CORS {
 }
 
 #[rocket::launch]
-async fn rocket() -> _ {
+async fn rocket() -> Rocket<Build> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let rocket_instance = build_rocket();
     // Get the default configured sample rate from `Rocket.toml`
@@ -54,7 +56,7 @@ async fn rocket() -> _ {
         }
     };
     let rocket_sentry = RocketSentry::builder()
-        .traces_sampler(Arc::new(traces_sampler))
+        // .traces_sampler(Arc::new(traces_sampler))  # TODO not working for some reasons
         .build();
 
     rocket_instance
