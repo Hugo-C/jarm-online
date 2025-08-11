@@ -1,12 +1,11 @@
-use std::env;
-use std::sync::Arc;
+use rocket::Build;
+use rocket::Rocket;
 use ::rocket_sentry::RocketSentry;
 use env_logger::Env;
 use jarm_online::build_rocket;
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::Header;
 use rocket::{Request, Response};
-use sentry::TransactionContext;
 
 pub struct CORS;
 
@@ -28,33 +27,10 @@ impl Fairing for CORS {
 }
 
 #[rocket::launch]
-async fn rocket() -> _ {
+async fn rocket() -> Rocket<Build> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let rocket_instance = build_rocket();
-    // Get the default configured sample rate from `Rocket.toml`
-    let default_rate = rocket_instance
-        .figment()
-        .extract_inner::<f32>("sentry_traces_sample_rate")
-        .unwrap_or(1.);
-    let last_scans_sample_rate_default: f32 = 0.;
-    let last_scans_sample_rate = match env::var("LAST_SCAN_SAMPLE_RATE"){
-        Ok(value) => value.parse::<f32>().unwrap_or(last_scans_sample_rate_default),
-        Err(_) => last_scans_sample_rate_default,
-    };
-    let traces_sampler = move |ctx: &TransactionContext| -> f32 {
-        match ctx.name() {
-            "GET /last-scans" => {
-                if default_rate == 0. {
-                    0.  // Allow to disable Sentry completely
-                } else {
-                    last_scans_sample_rate
-                }
-            },
-            _ => default_rate,
-        }
-    };
     let rocket_sentry = RocketSentry::builder()
-        .traces_sampler(Arc::new(traces_sampler))
         .build();
 
     rocket_instance
