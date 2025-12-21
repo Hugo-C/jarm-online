@@ -34,5 +34,5 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: |
-          npm install
+          npm install --force
           npm run build
