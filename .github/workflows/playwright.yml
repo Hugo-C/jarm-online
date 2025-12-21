@@ -12,10 +12,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Run playwright test
         run: docker compose -f docker-compose.playwright.yml run pytest_runner --tracing=retain-on-failure --output=/code/tests/playwright-test-results/
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: ${{ !cancelled() }}
         with:
           name: playwright-traces

@@ -1,9 +1,9 @@
 # Taken from https://cli.vuejs.org/guide/deployment.html#docker-nginx
-FROM node:20 AS build-stage
+FROM node:24 AS build-stage
 ARG VUE_APP_SENTRY_DSN
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm install --force # See https://github.com/codecov/codecov-javascript-bundler-plugins/issues/264
 COPY ./ .
 RUN npm run build
 

@@ -16,7 +16,7 @@ jobs:
     outputs:
       changes_detected: ${{ steps.filter.outputs.changes_detected }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -32,7 +32,7 @@ jobs:
     needs: rust_changed
     if: needs.rust_changed.outputs.changes_detected == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - id: rustcache
         uses: Swatinem/rust-cache@v2
       - name: Build
