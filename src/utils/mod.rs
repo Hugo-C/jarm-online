@@ -1,3 +1,5 @@
+pub mod sentry_helper;
+
 use lazy_static::lazy_static;
 use regex::Regex;
 
