@@ -12,7 +12,6 @@ mod test_route_last_scans {
     use crate::common::DUMMY_SERVER_JARM_HASH;
 
     #[rstest]
-    #[ignore = "Integration tests"]
     fn no_last_scans(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
         let expected_response = json!({
             "last_scans": [],
@@ -24,7 +23,6 @@ mod test_route_last_scans {
     }
 
     #[rstest]
-    #[ignore = "Integration tests"]
     fn a_single_last_scan(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
         let expected_response = json!({
             "last_scans": [{
@@ -41,7 +39,6 @@ mod test_route_last_scans {
     }
 
     #[rstest]
-    #[ignore = "Integration tests"]
     fn duplicates_are_not_returned(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
         let expected_response = json!({
             "last_scans": [{
@@ -59,7 +56,6 @@ mod test_route_last_scans {
     }
 
     #[rstest]
-    #[ignore = "Integration tests"]
     fn max_last_scan(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
         let mut expected_response = serde_json::Map::new();
         let mut last_scans = Vec::new();
@@ -84,7 +80,6 @@ mod test_route_last_scans {
     }
 
     #[rstest]
-    #[ignore = "Integration tests"]
     fn max_last_scan_and_another_one_not_returned(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
         let mut expected_response = serde_json::Map::new();
         let mut last_scans = Vec::new();

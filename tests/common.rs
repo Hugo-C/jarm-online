@@ -1,3 +1,4 @@
+use testcontainers_modules::testcontainers::runners::SyncRunner;
 use jarm_online::{build_rocket, build_rocket_without_tranco_initialisation};
 use lazy_static::lazy_static;
 use redis::RedisError;
@@ -9,12 +10,16 @@ use std::path::Path;
 use std::sync::{Mutex, MutexGuard};
 use std::time::Duration;
 use std::{env, thread};
+use testcontainers::{Container, GenericImage};
+use testcontainers::core::IntoContainerPort;
+use testcontainers_modules::redis::{Redis, REDIS_PORT};
+use testcontainers_modules::testcontainers::ImageExt;
+use testcontainers::core::WaitFor;
 
 #[allow(dead_code)] // used in tests
 pub const DUMMY_SERVER_JARM_HASH: &str =
     "21d19d00021d21d00021d19d21d21d1a46380b04d662f0848f508dd171125d";
 
-pub const REDIS_URL: &str = "redis://127.0.0.1/";
 pub const SQLITE_PATH: &str = "sqlite_data/db.sqlite"; // should be the same as the one defined in Rocket.toml
 
 lazy_static! {
@@ -46,8 +51,15 @@ pub fn set_env_var_auth_token() {
 }
 
 #[fixture]
+#[once]
+pub fn set_env_var_redis_url(redis_container_url: &String) {
+    let redis_url = format!("{{redis_db={{url=\"{redis_container_url}\"}}}}");
+    unsafe {env::set_var("ROCKET_DATABASES", redis_url) };
+}
+
+#[fixture]
 #[allow(unused_variables)]
-pub fn rocket_client(set_env_var_top1m_path: (), set_env_var_auth_token: ()) -> Client {
+pub fn rocket_client(set_env_var_top1m_path: (), set_env_var_auth_token: (), set_env_var_redis_url: ()) -> Client {
     let test_rocket = build_rocket();
     Client::tracked(test_rocket).expect("valid rocket instance")
 }
@@ -65,12 +77,46 @@ pub fn auth_header() -> Header<'static> {
 }
 
 #[fixture]
-pub fn clean_redis<'a>() -> MutexGuard<'a, ()> {
+#[once]
+pub fn redis_container() -> Container<Redis> {
+    Redis::default().with_tag("8-alpine").start().unwrap()
+}
+
+#[fixture]
+#[once]
+pub fn redis_container_url(redis_container: &Container<Redis>) -> String {
+    let host_ip = redis_container.get_host().unwrap();
+    let host_port = redis_container.get_host_port_ipv4(REDIS_PORT).unwrap();
+    format!("redis://{host_ip}:{host_port}")
+}
+
+#[fixture]
+#[once]
+pub fn dummy_server_container() -> Container<GenericImage> {
+    let image = GenericImage::new("hugocker/nginx_tls_dummy_server", "latest")
+        .with_wait_for(WaitFor::Duration { length: Duration::from_secs(1) });
+    let mut container_request = image.with_mapped_port(443, 443.tcp());
+    for port in 400..443 {
+        container_request = container_request.with_mapped_port(port, port.tcp())
+    }
+    let container = container_request
+        .start()
+        .expect("Failed to start dummy server");
+    container
+}
+
+#[fixture]
+pub fn clean_redis<'a>(redis_container: &Container<Redis>) -> MutexGuard<'a, ()> {
     let redis_lock = REDIS_MUTEX.lock().unwrap_or_else(|e| {
         REDIS_MUTEX.clear_poison();
         e.into_inner() // Prevent a failing test to fail the tests that follow
     });
-    let client = redis::Client::open(REDIS_URL).unwrap();
+
+
+    let host_ip = redis_container.get_host().unwrap();
+    let host_port = redis_container.get_host_port_ipv4(REDIS_PORT).unwrap();
+    let redis_container_url = format!("redis://{host_ip}:{host_port}");
+    let client = redis::Client::open(redis_container_url.clone()).unwrap();
     for i in 1..=10 {
         match clean_redis_commands(&client) {
             Ok(_) => break,

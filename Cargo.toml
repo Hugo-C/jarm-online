@@ -35,4 +35,6 @@ features = [
 ]
 
 [dev-dependencies]
-rstest = "0.25.0"
+rstest = "^0.25"
+testcontainers = { version = "^0.26", features = ["blocking"] }
+testcontainers-modules = { version = "^0.14", features = ["redis"] }

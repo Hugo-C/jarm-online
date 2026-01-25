@@ -4,16 +4,18 @@ mod common;
 #[cfg(test)]
 mod test_route_jarm {
     use std::sync::MutexGuard;
+    use std::thread;
+    use std::time::Duration;
     use rstest::*;
     use rocket::local::blocking::Client;
     use rocket::serde::json::serde_json::json;
     use rocket::serde::json::Value;
-    use crate::common::{clean_redis, rocket_client};
+    use testcontainers::{Container, GenericImage};
+    use crate::common::{clean_redis, rocket_client, dummy_server_container};
     use crate::common::DUMMY_SERVER_JARM_HASH;
 
     #[rstest]
-    #[ignore = "Integration tests"]
-    fn host_as_ip_only(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
+    fn host_as_ip_only(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client, dummy_server_container: &Container<GenericImage>) {
         let expected_response = json!({
             "host": "127.0.0.1",
             "port": "443",
@@ -27,8 +29,7 @@ mod test_route_jarm {
     }
 
     #[rstest]
-    #[ignore = "Integration tests"]
-    fn host_as_domain_only(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
+    fn host_as_domain_only(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client, dummy_server_container: &Container<GenericImage>) {
         let expected_response = json!({
             "host": "localhost",
             "port": "443",
@@ -42,8 +43,7 @@ mod test_route_jarm {
     }
 
     #[rstest]
-    #[ignore = "Integration tests"]
-    fn host_as_url_only(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
+    fn host_as_url_only(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client, dummy_server_container: &Container<GenericImage>) {
         let expected_response = json!({
             "host": "localhost",
             "port": "443",
@@ -57,8 +57,7 @@ mod test_route_jarm {
     }
 
     #[rstest]
-    #[ignore = "Integration tests"]
-    fn host_with_port(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
+    fn host_with_port(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client, dummy_server_container: &Container<GenericImage>) {
         let expected_response = json!({
             "host": "localhost",
             "port": "443",
@@ -72,8 +71,7 @@ mod test_route_jarm {
     }
 
     #[rstest]
-    #[ignore = "Integration tests"]
-    fn host_with_unusual_port(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
+    fn host_with_unusual_port(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client, dummy_server_container: &Container<GenericImage>) {
         let expected_response = json!({
             "host": "localhost",
             "port": "442",
@@ -89,7 +87,6 @@ mod test_route_jarm {
 
 
     #[rstest]
-    #[ignore = "Integration tests"]
     fn invalid_port(rocket_client: Client) {
         let expected_response = r#"{"host":"","port":"","jarm_hash":"","error":{"error_type":"Dns resolve error","error_message":"DetailedError { underlying_error: Some(Error { kind: InvalidInput, message: \"invalid port value\" }) }"}}"#;
 
@@ -99,7 +96,6 @@ mod test_route_jarm {
     }
 
     #[rstest]
-    #[ignore = "Integration tests"]
     fn non_responding_port(rocket_client: Client) {
         let expected_response = r#"{"host":"","port":"","jarm_hash":"","error":{"error_type":"Connection error","error_message":"DetailedError { underlying_error: Some(Os { code: 111, kind: ConnectionRefused, message: \"Connection refused\" }) }"}}"#;
 

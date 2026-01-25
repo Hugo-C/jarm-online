@@ -6,20 +6,22 @@ mod common;
 mod test_route_tranco_overlap {
     use async_std::task;
     use std::sync::MutexGuard;
+    use std::thread::sleep;
     use std::time::Duration;
 
     use rocket::http;
     use rocket::local::blocking::Client;
     use rocket_db_pools::deadpool_redis::{Config};
     use rstest::*;
+    use testcontainers::Container;
+    use testcontainers_modules::redis::{Redis, REDIS_PORT};
     use jarm_online::tranco_top1m::TrancoTop1M;
     use jarm_online::tranco_top1m::RankedDomain;
 
-    use crate::common::{REDIS_URL, rocket_client, rocket_client_without_tranco_init};
-    use crate::common::clean_redis;
+    use crate::common::{rocket_client, rocket_client_without_tranco_init};
+    use crate::common::{clean_redis, redis_container};
 
     #[rstest]
-    #[ignore = "Integration tests"]
     fn db_not_yet_loaded(_clean_redis: MutexGuard<'_, ()>, rocket_client_without_tranco_init: Client) {
         let rocket_client = rocket_client_without_tranco_init;
 
@@ -32,7 +34,6 @@ mod test_route_tranco_overlap {
     }
 
     #[rstest]
-    #[ignore = "Integration tests"]
     async fn no_overlap(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
         let expected_response = r#"{"overlapping_domains":[]}"#;
 
@@ -49,7 +50,6 @@ mod test_route_tranco_overlap {
 
 
     #[rstest]
-    #[ignore = "Integration tests"]
     async fn single_overlap(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
         let expected_response = r#"{"overlapping_domains":[{"rank":9,"domain":"zhihu.com"}]}"#;
         let jarm_hash = "3fd3fd20d3fd3fd21c3fd3fd3fd3fd2b66a312d81ed1efa0f55830f7490cb2";
@@ -68,7 +68,6 @@ mod test_route_tranco_overlap {
 
 
     #[rstest]
-    #[ignore = "Integration tests"]
     async fn multiple_overlap(_clean_redis: MutexGuard<'_, ()>, rocket_client: Client) {
         let expected_response = r#"{"overlapping_domains":[{"rank":11,"domain":"fake_site_1.com"},{"rank":12,"domain":"fake_site_2.com"}]}"#;
         let jarm_hash = "21d19d00021d21d00021d19d21d21d1a46380b04d662f0848f508dd171125d";
@@ -86,9 +85,11 @@ mod test_route_tranco_overlap {
     }
 
     #[rstest]
-    #[ignore = "Integration tests"]
-    async fn clear_tranco_values(_clean_redis: MutexGuard<'_, ()>, _rocket_client: Client) {
-        let cfg = Config::from_url(REDIS_URL);
+    async fn clear_tranco_values(redis_container: &Container<Redis>, _clean_redis: MutexGuard<'_, ()>, _rocket_client: Client) {
+        let host_ip = redis_container.get_host().unwrap();
+        let host_port = redis_container.get_host_port_ipv4(REDIS_PORT).unwrap();
+        let redis_container_url = format!("redis://{host_ip}:{host_port}");
+        let cfg = Config::from_url(redis_container_url);
         let pool = cfg.create_pool(None).unwrap();
         let connection = pool.get().await.unwrap();
         let mut tranco = TrancoTop1M::new(connection);
