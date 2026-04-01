@@ -1,4 +1,4 @@
-FROM rust:1.92-trixie AS build-stage
+FROM rust:1.95-trixie AS build-stage
 
 ARG BUILD_TARGET="x86_64-unknown-linux-musl"
 ARG BUILD_OPTIONS="--release --target $BUILD_TARGET"
@@ -24,7 +24,7 @@ RUN cargo build $BUILD_OPTIONS
 COPY . /app/project/
 
 # This is the actual build, touch the main.rs to have newer timestamp
-RUN touch /app/project/src/main.rs && cargo build $BUILD_OPTIONS -Z unstable-options --out-dir /app/dist
+RUN touch /app/project/src/main.rs && cargo build $BUILD_OPTIONS -Z unstable-options --artifact-dir /app/dist
 
 FROM alpine:3 AS production-stage
 RUN mkdir /app

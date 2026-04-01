@@ -148,7 +148,7 @@
         </v-expansion-panels>
       </v-container>
     </v-main>
-    <v-footer elevation="2" app>
+    <v-footer elevation="1" app>
       <v-row justify="center" no-gutters>
         <h5 id="footernote">
           hosted with 💙 on
