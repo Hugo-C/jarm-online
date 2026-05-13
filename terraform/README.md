@@ -1,0 +1,1 @@
+Based on https://gitlab.com/Bob74/terraform-ansible-gcp.

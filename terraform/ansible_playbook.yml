@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: localhost
   become: true
   vars:
     project_dir: "/srv/opt/jarm_online"
@@ -15,49 +15,65 @@
       apt:
         pkg:
           - apt-transport-https
+          - bridge-utils
           - ca-certificates
           - curl
           - git
-          - software-properties-common
+          - gnupg
           - python3-pip
           - virtualenv
           - python3-setuptools
         state: latest
         update_cache: true
 
-    - name: Add Docker GPG apt Key
-      apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
+    - name: get architecture
+      shell: dpkg --print-architecture
+      register: deb_architecture
 
-    - name: Verify that we have the key with the fingerprint
-      apt_key:
-        id: 0EBFCD88
-        state: present
 
-    - name: Add Docker Repository
+
+    - name: get gpg key
+      get_url:
+        url: https://download.docker.com/linux/debian/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: 0644
+        force: true
+      tags: install_docker
+
+    - name: add docker apt repository key.
+      get_url:
+        url: https://download.docker.com/linux/debian/gpg
+        dest: /etc/apt/trusted.gpg.d/docker.asc
+        mode: 0644
+        force: true
+      tags: install_docker
+
+    - name: add docker apt repository.
       apt_repository:
-        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        repo: "deb [arch={{ deb_architecture.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
         state: present
+        update_cache: yes
+        filename: docker
+      tags: install_docker
 
-    - name: Update apt and install docker-ce
+    - name: install docker and related components
       apt:
-        name: docker-ce
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
         state: latest
         update_cache: true
+      tags: install_docker
 
-    - name: Install Docker for Python
-      pip:
-        name:
-          - docker
-          - docker-compose
-
-    - name: Install docker-compose
-      get_url:
-       url : https://github.com/docker/compose/releases/latest/download/docker-compose-Linux-x86_64
-       dest: /usr/local/bin/docker-compose
-       mode: 'u+x,g+x,o+x'
-       force: true
+    - name: restart Docker
+      systemd:
+        name: docker
+        state: restarted
+        masked: no
+      tags: install_docker
 
     - name: Clone repo
       ansible.builtin.git:
@@ -66,6 +82,7 @@
         single_branch: true
         version: master
         update: true
+        depth: 1
 
     - name: Create project directory
       file:
@@ -116,9 +133,9 @@
       when: not env_result.stat.exists
 
     - name: Start containers
-      community.docker.docker_compose:
+      community.docker.docker_compose_v2:
         project_src: "{{ project_dir }}"
-        pull: true
+        pull: always
 
     - name: Add logrotate to nginx
       ansible.builtin.copy:
