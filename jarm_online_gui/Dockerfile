@@ -1,5 +1,5 @@
 # Taken from https://cli.vuejs.org/guide/deployment.html#docker-nginx
-FROM node:24 AS build-stage
+FROM node:26 AS build-stage
 ARG VUE_APP_SENTRY_DSN
 WORKDIR /app
 COPY package*.json ./
