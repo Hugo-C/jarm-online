@@ -20,10 +20,12 @@ services:
     container_name: jarm_online_api_container
     environment:
       - ROCKET_PROFILE=release
-      - ROCKET_DATABASES={redis_db={url="redis://redis"}}
+      - ROCKET_DATABASES={redis_db={url="redis://redis",pool_size=10,timeout=2}, sqlite_db={url="sqlite_data/db.sqlite"}}
       - ROCKET_SENTRY_DSN=${ROCKET_SENTRY_DSN}
-      - ROCKET_SENTRY_TRACES_SAMPLE_RATE=1.0
+      - ROCKET_SENTRY_TRACES_SAMPLE_RATE=0.2
+      - LAST_SCAN_SAMPLE_RATE=0.1
       - TRANCO_TOP1M_S3_URL=https://storage.googleapis.com/tranco-jarm/jarm-tranco-top-1m.csv
+      - SHODAN_API_KEY=${SHODAN_API_KEY}
       - AUTH_TOKEN=${AUTH_TOKEN}
     volumes:
       - ./sqlite_data:/app/sqlite_data

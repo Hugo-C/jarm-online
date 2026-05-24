@@ -1,0 +1,17 @@
+plugin: gcp_compute
+zones: # populate inventory with instances in these regions
+  - us-east1-d
+projects:
+  - jarm-online
+service_account_file: ./service_account.json
+auth_kind: serviceaccount
+keyed_groups:
+  # Create groups from GCE labels
+  - key: labels
+    prefix: label
+  - key: zone
+    prefix: zone
+hostnames:
+  - name
+compose:
+  ansible_host: networkInterfaces[0].accessConfigs[0].natIP
