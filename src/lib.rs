@@ -32,8 +32,6 @@ use rust_jarm::error::JarmError;
 use rocket_db_pools::{sqlx, Database};
 use rocket_db_pools::deadpool_redis::redis::AsyncCommands;
 use rocket_db_pools::sqlx::Row;
-use rocket_okapi::r#gen::OpenApiGenerator;
-use rocket_okapi::request::{OpenApiFromRequest, RequestHeaderInput};
 use sqlx::migrate;
 use sqlx::sqlite::SqliteRow;
 use uuid::Uuid;

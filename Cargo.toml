@@ -1,5 +1,5 @@
 [package]
-name = "jarm_online"
+name = "jarm-online"
 version = "0.2.2"
 edition = "2024"
 
@@ -38,3 +38,7 @@ features = [
 
 [dev-dependencies]
 rstest = "0.25.0"
+
+[[bin]]
+name = "jarm-online"
+path = "src/main.rs"
