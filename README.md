@@ -29,48 +29,7 @@ For development see [GUI's README](jarm_online_gui/README.md) to spinup the GUI 
 
 ## API Endpoints
 
-The list of endpoints currently available (see also [examples](examples)).
-
-### Scan a website to obtain it's jarm fingerprint
-
-````http request
-GET api/v1/jarm?host=<host>&port=<port>
-````
-
-It takes a required `host` parameter and optionally `port` (default to 443).
-
-### Retrieve domains from tranco top 1 million that match a jarm hash
-
-````http request
-GET api/v1/tranco-overlap?jarm_hash=<jarm-hash>
-````
-
-The returned list is ordered by top tranco rank first
-
-### Retrieve recently scanned hosts
-
-````http request
-GET api/v1/last-scans
-````
-
-The returned list is ordered by oldest scans first. No pagination is proposed.
-
-### Retrieve confirmed malicious host
-
-````http request
-GET api/v1/confirmed-ioc-scans
-````
-
-The returned list is paginated.
-
-### Submit confirmed malicious host
-
-````http request
-Post api/v1/confirmed-ioc-scans
-````
-
-🟠 endpoint require authentication.  
-No response will be returned. Insertion is visible instantly.
+[OpenAPI of the list of endpoints currently available](https://jarm.chas.tel/api/v1/swagger-ui/) (see also [examples](examples)).
 
 ## Images statistics
 

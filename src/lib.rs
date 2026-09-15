@@ -11,6 +11,9 @@ use crate::tranco_top1m::{TrancoTop1M};
 use crate::tranco_top1m::RankedDomain as TrancoRankedDomain;
 use crate::utils::sentry_helper::start_sentry_span;
 use crate::utils::sentry_helper::SentryOp;
+use rocket_okapi::okapi::schemars::JsonSchema;
+use rocket_okapi::{openapi, openapi_get_routes, swagger_ui::*};
+
 
 
 use std::env;
@@ -47,7 +50,7 @@ pub struct Db(deadpool_redis::Pool);
 #[database("sqlite_db")]
 struct SqliteDb(sqlx::SqlitePool);
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
 struct ConfirmedIocScan {  // Confirmed in the sense it comes from a reliable source
     id: Option<Uuid>,
     host: String,
@@ -84,24 +87,24 @@ impl<'r> FromRow<'r, SqliteRow> for ConfirmedIocScan {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 struct PaginatedConfirmedIocScanResponse {
     results: Vec<ConfirmedIocScan>,
     next: Option<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 struct ErrorResponse {
     error: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 struct JarmErrorResponse {
     error_type: String,
     error_message: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 struct JarmResponse {
     host: String,
     port: String,
@@ -109,24 +112,24 @@ struct JarmResponse {
     error: Option<JarmErrorResponse>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, JsonSchema)]
 struct LastScanResponse {
     host: String,
     port: String,
     jarm_hash: String,
 }  // TODO timestamp ?
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 struct LastScanListResponse {
     last_scans: Vec<LastScanResponse>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 struct TrancoOverlapResponse {
     overlapping_domains: Vec<TrancoRankedDomain>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 struct ShodanHostCountResponse {
     total: u64,
 }
@@ -138,7 +141,9 @@ pub fn scan_timeout_in_seconds() -> u64 {
         .expect("Valid timeout value")
 }
 
-#[get("/?<host>&<port>")]
+/// Scan a website to obtain it's jarm fingerprint
+#[openapi]
+#[get("/jarm?<host>&<port>")]
 async fn jarm(host: String, port: Option<String>, mut redis_client: Connection<Db>) -> Json<JarmResponse> {
     let _port = port.unwrap_or_else(|| "443".to_string());
     let _host = utils::sanitize_host(&host);
@@ -191,7 +196,11 @@ async fn jarm(host: String, port: Option<String>, mut redis_client: Connection<D
     Json(JarmResponse { host: scan.host, port: scan.port, jarm_hash: scan.jarm_hash, error: None })
 }
 
-#[get("/")]
+/// Retrieve recently scanned hosts
+///
+/// The returned list is ordered by oldest scans first. No pagination is proposed.
+#[openapi]
+#[get("/last-scans")]
 async fn last_scans(mut redis_client: Connection<Db>) -> Json<LastScanListResponse> {
     let redis_last_scans = {
         let redis_zrange_span = start_sentry_span(SentryOp::Redis, "fetching number of saved results");
@@ -206,7 +215,11 @@ async fn last_scans(mut redis_client: Connection<Db>) -> Json<LastScanListRespon
     Json(LastScanListResponse { last_scans })
 }
 
-#[get("/?<jarm_hash>")]
+/// Retrieve domains from tranco top 1 million that match a jarm hash
+///
+/// The returned list is ordered by top tranco rank first
+#[openapi]
+#[get("/tranco-overlap?<jarm_hash>")]
 async fn tranco_overlap(redis_client: Connection<Db>, jarm_hash: String) -> Result<Json<TrancoOverlapResponse>, Custom<Json<ErrorResponse>>> {
     let mut tranco = TrancoTop1M::from(redis_client);
     if !tranco.is_initialized().await {
@@ -216,7 +229,9 @@ async fn tranco_overlap(redis_client: Connection<Db>, jarm_hash: String) -> Resu
     Ok(Json(TrancoOverlapResponse { overlapping_domains }))
 }
 
-#[get("/?<jarm_hash>")]
+/// Returns the number of shodan results for the given jarm hash
+#[openapi]
+#[get("/shodan-host-count?<jarm_hash>")]
 async fn shodan_host_count(jarm_hash: String) -> Json<ShodanHostCountResponse> {
     let shodan_api_key = env::var("SHODAN_API_KEY").unwrap_or_default();
     let query_param = format!("ssl.jarm:{jarm_hash}");
@@ -233,7 +248,9 @@ async fn shodan_host_count(jarm_hash: String) -> Json<ShodanHostCountResponse> {
     Json(ShodanHostCountResponse { total })
 }
 
-#[get("/")]
+/// Retrieve confirmed malicious host in a paginated manner
+#[openapi]
+#[get("/confirmed-ioc-scans")]
 async fn get_confirmed_ioc_scans(mut sql_client: Connection<SqliteDb>) -> Json<PaginatedConfirmedIocScanResponse> {
     let confirmed_ioc_scans = sqlx::query_as::<_, ConfirmedIocScan>("SELECT * FROM confirmed_ioc_scan").fetch_all(&mut **sql_client).await.unwrap();
     Json(PaginatedConfirmedIocScanResponse {
@@ -242,7 +259,8 @@ async fn get_confirmed_ioc_scans(mut sql_client: Connection<SqliteDb>) -> Json<P
     })
 }
 
-#[post("/", data = "<confirmed_ioc_scan>")]
+#[openapi(skip)]
+#[post("/confirmed-ioc-scans", data = "<confirmed_ioc_scan>")]
 async fn post_confirmed_ioc_scans(_token: auth::AuthToken<'_>, confirmed_ioc_scan: Json<ConfirmedIocScan>, mut sql_client: Connection<SqliteDb>) -> Created<&'static str> {
     let confirmed_ioc_scan_id = Uuid::new_v4();
     let _ = sqlx::query("INSERT INTO confirmed_ioc_scan (id, host, port, jarm_hash, scan_timestamp, threat_fox_first_seen, threat_fox_confidence_level, threat_fox_malware) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
@@ -294,11 +312,21 @@ async fn run_migrations(rocket: Rocket<Build>) -> fairing::Result {
 
 pub fn build_rocket_without_tranco_initialisation() -> Rocket<Build> {
     rocket::build()
-        .mount("/jarm", routes![jarm])
-        .mount("/last-scans", routes![last_scans])
-        .mount("/tranco-overlap", routes![tranco_overlap])
-        .mount("/shodan-host-count", routes![shodan_host_count])
-        .mount("/confirmed-ioc-scans", routes![get_confirmed_ioc_scans, post_confirmed_ioc_scans])
+        .mount("/", openapi_get_routes![
+            jarm,
+            last_scans,
+            tranco_overlap,
+            shodan_host_count,
+            get_confirmed_ioc_scans,
+            post_confirmed_ioc_scans
+        ])
+        .mount(
+            "/swagger-ui/",
+            make_swagger_ui(&SwaggerUIConfig {
+                url: "../openapi.json".to_owned(),
+                ..Default::default()
+            }),
+        )
         .attach(Db::init())
         .attach(SqliteDb::init())
         .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
