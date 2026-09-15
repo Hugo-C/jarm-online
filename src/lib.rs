@@ -141,7 +141,8 @@ pub fn scan_timeout_in_seconds() -> u64 {
         .expect("Valid timeout value")
 }
 
-#[openapi()]
+/// Scan a website to obtain it's jarm fingerprint
+#[openapi]
 #[get("/jarm?<host>&<port>")]
 async fn jarm(host: String, port: Option<String>, mut redis_client: Connection<Db>) -> Json<JarmResponse> {
     let _port = port.unwrap_or_else(|| "443".to_string());
@@ -195,7 +196,10 @@ async fn jarm(host: String, port: Option<String>, mut redis_client: Connection<D
     Json(JarmResponse { host: scan.host, port: scan.port, jarm_hash: scan.jarm_hash, error: None })
 }
 
-#[openapi()]
+/// Retrieve recently scanned hosts
+///
+/// The returned list is ordered by oldest scans first. No pagination is proposed.
+#[openapi]
 #[get("/last-scans")]
 async fn last_scans(mut redis_client: Connection<Db>) -> Json<LastScanListResponse> {
     let redis_last_scans = {
@@ -211,7 +215,10 @@ async fn last_scans(mut redis_client: Connection<Db>) -> Json<LastScanListRespon
     Json(LastScanListResponse { last_scans })
 }
 
-#[openapi()]
+/// Retrieve domains from tranco top 1 million that match a jarm hash
+///
+/// The returned list is ordered by top tranco rank first
+#[openapi]
 #[get("/tranco-overlap?<jarm_hash>")]
 async fn tranco_overlap(redis_client: Connection<Db>, jarm_hash: String) -> Result<Json<TrancoOverlapResponse>, Custom<Json<ErrorResponse>>> {
     let mut tranco = TrancoTop1M::from(redis_client);
@@ -222,7 +229,8 @@ async fn tranco_overlap(redis_client: Connection<Db>, jarm_hash: String) -> Resu
     Ok(Json(TrancoOverlapResponse { overlapping_domains }))
 }
 
-#[openapi()]
+/// Returns the number of shodan results for the given jarm hash
+#[openapi]
 #[get("/shodan-host-count?<jarm_hash>")]
 async fn shodan_host_count(jarm_hash: String) -> Json<ShodanHostCountResponse> {
     let shodan_api_key = env::var("SHODAN_API_KEY").unwrap_or_default();
@@ -240,7 +248,8 @@ async fn shodan_host_count(jarm_hash: String) -> Json<ShodanHostCountResponse> {
     Json(ShodanHostCountResponse { total })
 }
 
-#[openapi()]
+/// Retrieve confirmed malicious host in a paginated manner
+#[openapi]
 #[get("/confirmed-ioc-scans")]
 async fn get_confirmed_ioc_scans(mut sql_client: Connection<SqliteDb>) -> Json<PaginatedConfirmedIocScanResponse> {
     let confirmed_ioc_scans = sqlx::query_as::<_, ConfirmedIocScan>("SELECT * FROM confirmed_ioc_scan").fetch_all(&mut **sql_client).await.unwrap();
