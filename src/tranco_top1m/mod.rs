@@ -7,6 +7,7 @@ use rocket_db_pools::deadpool_redis::redis::{AsyncCommands, RedisError};
 use serde::Serialize;
 use tempfile::NamedTempFile;
 use crate::rocket::futures::StreamExt;
+use rocket_okapi::okapi::schemars::JsonSchema;
 
 use crate::Db;
 use crate::deadpool_redis::Connection;
@@ -19,7 +20,7 @@ const TRANCO_TOP1M_S3_URL: &str = "TRANCO_TOP1M_S3_URL";
 const TRANCO_TOP_1M_JARM_PREFIX_KEY: &str = "trancotop1m:jarm:";
 const TRANCO_TOP_1M_INITIALIZED_KEY: &str = "trancotop1m:initialized";
 
-#[derive(PartialEq, Serialize, Clone, Debug)]
+#[derive(PartialEq, Serialize, JsonSchema, Clone, Debug)]
 pub struct RankedDomain {
     pub rank: u64,
     pub domain: String,
