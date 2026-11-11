@@ -1,5 +1,6 @@
 import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { Unhead } from '@unhead/vue/vite'
 import {sentryVitePlugin} from "@sentry/vite-plugin";
 import {codecovVitePlugin} from "@codecov/vite-plugin";
 import * as path from "path";
@@ -15,6 +16,7 @@ export default defineConfig({
                 }
             }
         }),
+        Unhead(),
         sentryVitePlugin({
             org: process.env.SENTRY_ORG,
             project: process.env.SENTRY_PROJECT,
@@ -29,7 +31,7 @@ export default defineConfig({
     ],
     resolve: {
         alias: {
-            "@": path.resolve(__dirname, "./src"),
+            "@": path.resolve(import.meta.dirname, "./src"),
         },
     },
     build: {

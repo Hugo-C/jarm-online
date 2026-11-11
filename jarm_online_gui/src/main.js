@@ -1,6 +1,7 @@
 import {createApp} from 'vue'
 
 import { createHead } from '@unhead/vue/client'
+import { ValidatePlugin } from 'unhead/plugins'
 import * as Sentry from "@sentry/vue"
 import App from './App.vue'
 import createVuetify from "./plugins/vuetify";
@@ -28,7 +29,11 @@ Sentry.init({
     replaysOnErrorSampleRate: 1.0,
 });
 
-const head = createHead()
+const head = createHead({
+    plugins: [
+        ValidatePlugin()
+    ]
+})
 app
     .use(createVuetify)
     .use(head)
