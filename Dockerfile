@@ -1,4 +1,4 @@
-FROM rust:1.95-trixie AS build-stage
+FROM rust:1.99-trixie AS build-stage
 
 ARG BUILD_TARGET="x86_64-unknown-linux-musl"
 ARG BUILD_OPTIONS="--release --target $BUILD_TARGET"

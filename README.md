@@ -29,7 +29,7 @@ For development see [GUI's README](jarm_online_gui/README.md) to spinup the GUI 
 
 ## API Endpoints
 
-[OpenAPI of the list of endpoints currently available](https://jarm.chas.tel/api/v1/swagger-ui/) (see also [examples](examples)).
+[OpenAPI of the list of endpoints currently available](https://jarm.chas.tel/api/v1/swagger-ui/index.html) (see also [examples](examples)).
 
 ## Images statistics
 
